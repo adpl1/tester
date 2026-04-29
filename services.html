@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ادبل | طلب خدمة</title>
+<meta name="description" content="صفحة طلب الخدمات داخل ادبل: استعرض مزودي الخدمات، انشر طلبك، أو أضف خدمتك كعرض مستقل.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+<style>
+:root{--primary:#FF5A1F;--primary-dark:#E04A10;--primary-light:#FFE8DD;--dark:#1A1D29;--gray:#6B7280;--light:#F8F9FB;--border:#E8EBF0;--success:#16a34a;--danger:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif}
+body{background:#f5f7fb;color:var(--dark)}
+.wrap{max-width:980px;margin:0 auto;min-height:100dvh;padding:16px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.back{width:44px;height:44px;border-radius:14px;background:white;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dark)}
+.hero{background:linear-gradient(135deg,#10B981,#34D399);color:white;border-radius:24px;padding:22px;margin-bottom:16px;box-shadow:0 14px 30px rgba(16,185,129,.16)}
+.hero h1{font-size:24px;margin-bottom:6px}
+.hero p{font-size:13px;opacity:.95;line-height:1.7}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.card{background:white;border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.04)}
+.card h2{font-size:18px;margin-bottom:10px}
+.sub{font-size:12px;color:var(--gray);margin-top:-4px;margin-bottom:12px;line-height:1.6}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.chip{padding:8px 12px;border-radius:100px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:700;color:var(--dark)}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.providers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.provider{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#fff;transition:.2s;box-shadow:0 6px 18px rgba(0,0,0,.03)}
+.provider:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.08)}
+.provider .img{height:140px;background:linear-gradient(135deg,#f2f4f8,#e8edf6);display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--primary)}
+.provider .img img{width:100%;height:100%;object-fit:cover}
+.provider .body{padding:12px}
+.provider h3{font-size:15px;margin-bottom:4px}
+.provider p{font-size:12px;color:var(--gray);line-height:1.55;margin-bottom:8px}
+.meta{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;color:var(--gray);margin-bottom:10px}
+.price{font-weight:900;color:var(--primary)}
+.btn{width:100%;border:none;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1}
+.form{display:grid;gap:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.input,.textarea,.select{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:14px;font:inherit;background:#fff;outline:none}
+.textarea{min-height:96px;resize:vertical}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--primary);background:var(--primary-light)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{background:#f8fafc;border:1px dashed #d7deea;color:#334155;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.7}
+.hidden{display:none}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:1000;max-width:90%;text-align:center;font-size:13px}
+.toast.show{opacity:1;top:26px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}.providers{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="back" onclick="location.href='index.html'"><i class="fas fa-arrow-right"></i></button>
+      <div>
+        <div style="font-weight:900;font-size:20px">طلب خدمة</div>
+        <div style="color:var(--gray);font-size:13px">استعرض مزودي الخدمة أو انشر طلبك</div>
+      </div>
+    </div>
+    <button class="back" id="logoutBtn" title="تسجيل الخروج"><i class="fas fa-right-from-bracket"></i></button>
+  </div>
+
+  <div class="hero">
+    <h1>خدمات منزلية ومهنية</h1>
+    <p>اعرض خدمتك أو ابحث عن سباك، كهربائي، مصمم، أو أي خدمة أخرى. الصفحة تعمل داخل Firebase وتستخدم نفس تسجيل الدخول في الموقع الأساسي.</p>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>مزودو الخدمة</h2>
+      <div class="sub">فلتر حسب نوع الخدمة ثم تواصل مباشرة مع مزود الخدمة.</div>
+      <div class="chips" id="filters"></div>
+      <div class="providers" id="providers"></div>
+    </section>
+
+    <section class="card">
+      <div class="tabs">
+        <button class="btn btn-primary" id="showRequest">طلب خدمة</button>
+        <button class="btn btn-outline" id="showPublish">نشر خدمة</button>
+      </div>
+
+      <div id="requestPanel">
+        <h2>طلب خدمة</h2>
+        <p class="sub">اكتب الطلب الذي تحتاجه وسيصل إلى قاعدة البيانات كطلب خدمة جديد.</p>
+        <div class="form">
+          <div class="field">
+            <label>نوع الخدمة</label>
+            <select id="reqType" class="select">
+              <option>سباكة</option>
+              <option>كهرباء</option>
+              <option>تكييف</option>
+              <option>تصميم</option>
+              <option>تنظيف</option>
+              <option>نقل</option>
+              <option>أخرى</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>عنوان الخدمة</label>
+            <input id="reqTitle" class="input" placeholder="أحتاج سباك الآن">
+          </div>
+          <div class="field">
+            <label>وصف الطلب</label>
+            <textarea id="reqDesc" class="textarea" placeholder="اكتب تفاصيل الطلب باختصار"></textarea>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>الموقع</label>
+              <input id="reqLocation" class="input" placeholder="الحي / الشارع">
+            </div>
+            <div class="field">
+              <label>رقم التواصل</label>
+              <input id="reqPhone" class="input" placeholder="05xxxxxxxx">
+            </div>
+          </div>
+          <button class="btn btn-primary" id="submitRequest"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+        </div>
+      </div>
+
+      <div id="publishPanel" class="hidden">
+        <h2>نشر خدمة</h2>
+        <p class="sub">أضف خدمتك إلى قائمة المزودين لتظهر للزوار.</p>
+        <div class="form">
+          <div class="field">
+            <label>نوع الخدمة</label>
+            <select id="pubType" class="select">
+              <option>سباكة</option>
+              <option>كهرباء</option>
+              <option>تكييف</option>
+              <option>تصميم</option>
+              <option>تنظيف</option>
+              <option>نقل</option>
+              <option>أخرى</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>اسم المزود</label>
+            <input id="pubName" class="input" placeholder="اسمك أو اسم النشاط">
+          </div>
+          <div class="field">
+            <label>وصف الخدمة</label>
+            <textarea id="pubDesc" class="textarea" placeholder="صف خبرتك أو ما تقدمه"></textarea>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>سعر تقريبي</label>
+              <input id="pubPrice" class="input" placeholder="100">
+            </div>
+            <div class="field">
+              <label>رقم التواصل</label>
+              <input id="pubPhone" class="input" placeholder="05xxxxxxxx">
+            </div>
+          </div>
+          <div class="field">
+            <label>رابط صورة (اختياري)</label>
+            <input id="pubImage" class="input" placeholder="https://...">
+          </div>
+          <button class="btn btn-primary" id="submitPublish"><i class="fas fa-bullhorn"></i> نشر الخدمة</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA3wjOh1IZLS5cK8dH0fB6nwKH50iXvFhk",
+  authDomain: "ahmad-b755f.firebaseapp.com",
+  projectId: "ahmad-b755f",
+  storageBucket: "ahmad-b755f.firebasestorage.app",
+  messagingSenderId: "1086597289816",
+  appId: "1:1086597289816:web:efe60451f04837b75e772d",
+  measurementId: "G-E41VP56DLZ"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+const toast = (msg, type='') => {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  if(type === 'success') t.style.background = '#16a34a';
+  else if(type === 'error') t.style.background = '#ef4444';
+  else t.style.background = '#111827';
+  setTimeout(()=>t.classList.remove('show'), 2400);
+};
+
+const samples = [
+  {name:'فني سباكة', type:'سباكة', description:'حلول تسربات، تمديدات، وصيانة شاملة داخل المدينة.', price:'120', phone:'0500000001', icon:'fa-faucet'},
+  {name:'كهربائي منازل', type:'كهرباء', description:'فحص أعطال، تركيب إنارة، ولوحات كهربائية.', price:'150', phone:'0500000002', icon:'fa-bolt'},
+  {name:'مصمم واجهات', type:'تصميم', description:'تصميم واجهات مواقع وتطبيقات بشكل عصري ومتجاوب.', price:'300', phone:'0500000003', icon:'fa-pen-ruler'},
+  {name:'مكيفات وتبريد', type:'تكييف', description:'تنظيف وصيانة وتشغيل المكيفات بأفضل جودة.', price:'180', phone:'0500000004', icon:'fa-fan'}
+];
+
+let providers = [];
+let filter = 'الكل';
+
+function renderFilters(){
+  const cats = ['الكل', ...new Set([...samples.map(s=>s.type), ...providers.map(p=>p.type)].filter(Boolean))];
+  $('#filters').innerHTML = cats.map(c => `<button class="chip ${c===filter?'active':''}" data-cat="${c}">${c}</button>`).join('');
+  $$('#filters .chip').forEach(b => b.addEventListener('click', ()=>{
+    filter = b.dataset.cat;
+    renderFilters();
+    renderProviders();
+  }));
+}
+
+function renderProviders(){
+  const list = [...providers, ...samples].filter(p => filter === 'الكل' ? true : p.type === filter);
+  $('#providers').innerHTML = list.length ? list.map(p => `
+    <article class="provider">
+      <div class="img">${p.image ? `<img src="${p.image}" alt="">` : `<i class="fas ${p.icon || 'fa-screwdriver-wrench'}"></i>`}</div>
+      <div class="body">
+        <h3>${p.name || 'مزود خدمة'}</h3>
+        <p>${p.description || ''}</p>
+        <div class="meta">
+          <span><i class="fas fa-tag"></i> ${p.type || 'خدمة'}</span>
+          <span class="price">${p.price ? `${p.price} ر.س` : 'حسب الطلب'}</span>
+        </div>
+        <button class="btn btn-primary" data-phone="${p.phone || ''}"><i class="fas fa-comments"></i> تواصل</button>
+      </div>
+    </article>
+  `).join('') : `<div class="note" style="grid-column:1/-1">لا توجد خدمات مطابقة للفلتر الحالي.</div>`;
+
+  $$('#providers .btn').forEach(btn => btn.addEventListener('click', ()=>{
+    const phone = btn.dataset.phone || '';
+    if(phone){
+      window.open(`https://wa.me/${phone.replace(/\D/g,'')}`, '_blank');
+    } else {
+      toast('لا يوجد رقم تواصل مضاف', 'error');
+    }
+  }));
+}
+
+async function loadProviders(){
+  try{
+    const snap = await getDocs(collection(db, 'serviceProviders'));
+    providers = snap.docs.map(d => ({id:d.id, ...d.data()}));
+  }catch(e){}
+  renderFilters();
+  renderProviders();
+}
+
+$('#showRequest').onclick = () => {
+  $('#requestPanel').classList.remove('hidden');
+  $('#publishPanel').classList.add('hidden');
+  $('#showRequest').className = 'btn btn-primary';
+  $('#showPublish').className = 'btn btn-outline';
+};
+
+$('#showPublish').onclick = () => {
+  $('#requestPanel').classList.add('hidden');
+  $('#publishPanel').classList.remove('hidden');
+  $('#showRequest').className = 'btn btn-outline';
+  $('#showPublish').className = 'btn btn-primary';
+};
+
+$('#submitRequest').onclick = async () => {
+  const data = {
+    type: $('#reqType').value.trim(),
+    title: $('#reqTitle').value.trim(),
+    description: $('#reqDesc').value.trim(),
+    location: $('#reqLocation').value.trim(),
+    phone: $('#reqPhone').value.trim(),
+    createdAt: serverTimestamp()
+  };
+  if(!data.title || !data.description || !data.phone){
+    toast('أكمل الحقول المطلوبة', 'error');
+    return;
+  }
+  try{
+    const user = auth.currentUser;
+    await addDoc(collection(db, 'serviceRequests'), {
+      ...data,
+      userId: user ? user.uid : null,
+      userEmail: user ? user.email : null,
+      status: 'pending'
+    });
+    toast('تم إرسال طلب الخدمة', 'success');
+    $('#reqTitle').value = ''; $('#reqDesc').value = ''; $('#reqLocation').value = ''; $('#reqPhone').value = '';
+  }catch(e){
+    toast('تعذر الإرسال: ' + e.message, 'error');
+  }
+};
+
+$('#submitPublish').onclick = async () => {
+  const data = {
+    name: $('#pubName').value.trim(),
+    type: $('#pubType').value.trim(),
+    description: $('#pubDesc').value.trim(),
+    price: $('#pubPrice').value.trim(),
+    phone: $('#pubPhone').value.trim(),
+    image: $('#pubImage').value.trim(),
+    createdAt: serverTimestamp()
+  };
+  if(!data.name || !data.description || !data.phone){
+    toast('أكمل الحقول المطلوبة', 'error');
+    return;
+  }
+  try{
+    const user = auth.currentUser;
+    await addDoc(collection(db, 'serviceProviders'), {
+      ...data,
+      userId: user ? user.uid : null,
+      status: 'active'
+    });
+    toast('تم نشر الخدمة', 'success');
+    $('#pubName').value=''; $('#pubDesc').value=''; $('#pubPrice').value=''; $('#pubPhone').value=''; $('#pubImage').value='';
+    loadProviders();
+  }catch(e){
+    toast('تعذر النشر: ' + e.message, 'error');
+  }
+};
+
+$('#logoutBtn').onclick = async () => { try{ await signOut(auth); location.href = 'index.html'; } catch(e){} };
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    location.href = 'index.html';
+    return;
+  }
+  loadProviders();
+});
+</script>
+</body>
+</html>

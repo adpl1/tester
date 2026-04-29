@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ادبل | طلب سيارة</title>
+<meta name="description" content="صفحة طلب سيارة داخل ادبل مع خريطة مجانية وحساب سعر تقريبي وتحديد أقرب كابتن متاح.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+:root{--primary:#2563EB;--primary-dark:#1D4ED8;--primary-light:#EAF1FF;--dark:#1A1D29;--gray:#6B7280;--light:#F8F9FB;--border:#E8EBF0;--success:#16a34a;--danger:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif}
+body{background:#f5f7fb;color:var(--dark)}
+.wrap{max-width:980px;margin:0 auto;min-height:100dvh;padding:16px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.back{width:44px;height:44px;border-radius:14px;background:white;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dark)}
+.hero{background:linear-gradient(135deg,#2563EB,#60A5FA);color:white;border-radius:24px;padding:22px;margin-bottom:16px;box-shadow:0 14px 30px rgba(37,99,235,.16)}
+.hero h1{font-size:24px;margin-bottom:6px}
+.hero p{font-size:13px;opacity:.95;line-height:1.7}
+.grid{display:grid;grid-template-columns:1fr .9fr;gap:16px}
+.card{background:white;border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.04)}
+.card h2{font-size:18px;margin-bottom:10px}
+.sub{font-size:12px;color:var(--gray);margin-top:-4px;margin-bottom:12px;line-height:1.6}
+#map{height:360px;border-radius:18px;overflow:hidden;border:1px solid var(--border)}
+.form{display:grid;gap:12px;margin-top:14px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.input,.textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:14px;font:inherit;background:#fff;outline:none}
+.textarea{min-height:86px;resize:vertical}
+.input:focus,.textarea:focus{border-color:var(--primary);background:var(--primary-light)}
+.btn{width:100%;border:none;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px 14px;font-size:13px;line-height:1.7}
+.big{font-size:18px;font-weight:900;color:var(--primary)}
+.kaptain{display:flex;gap:12px;align-items:flex-start}
+.kaptain .ic{width:52px;height:52px;border-radius:16px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:1000;max-width:90%;text-align:center;font-size:13px}
+.toast.show{opacity:1;top:26px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.hero h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="back" onclick="location.href='index.html'"><i class="fas fa-arrow-right"></i></button>
+      <div>
+        <div style="font-weight:900;font-size:20px">طلب سيارة</div>
+        <div style="color:var(--gray);font-size:13px">خدمة شبيهة بأوبر مع خريطة مجانية</div>
+      </div>
+    </div>
+    <button class="back" id="refreshLoc" title="تحديث الموقع"><i class="fas fa-location-crosshairs"></i></button>
+  </div>
+
+  <div class="hero">
+    <h1>احجز مشوارك الآن</h1>
+    <p>حدّد نقطة الانطلاق والوجهة من الخريطة، وسيتم حساب السعر التقريبي وتحديد أقرب كابتن متاح تلقائيًا.</p>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>الخريطة</h2>
+      <div class="sub">اضغط على الخريطة لتحديد نقطة الانطلاق، ثم أدخل الوجهة واحسب السعر.</div>
+      <div id="map"></div>
+      <div class="form">
+        <div class="row">
+          <div class="field">
+            <label>نقطة الانطلاق</label>
+            <input id="pickupText" class="input" placeholder="سيتم تعبئتها تلقائيًا">
+          </div>
+          <div class="field">
+            <label>الوجهة</label>
+            <input id="destText" class="input" placeholder="مثال: المطار / الجامعة / الحي">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>نوع الرحلة</label>
+            <select id="rideType" class="input">
+              <option value="economy">اقتصادي</option>
+              <option value="comfort">مريح</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>المسافة التقريبية</label>
+            <input id="distanceBox" class="input" disabled value="0 كم">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>السعر المتوقع</label>
+            <input id="priceBox" class="input" disabled value="0 ر.س">
+          </div>
+          <div class="field">
+            <label>أقرب كابتن</label>
+            <input id="captainBox" class="input" disabled value="جارٍ البحث...">
+          </div>
+        </div>
+        <button class="btn btn-outline" id="searchDest"><i class="fas fa-magnifying-glass-location"></i> تحديد الوجهة على الخريطة</button>
+        <button class="btn btn-primary" id="orderRide"><i class="fas fa-car-side"></i> اطلب الآن</button>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h2>معلومات الرحلة</h2>
+      <div class="kaptain">
+        <div class="ic"><i class="fas fa-route"></i></div>
+        <div>
+          <div style="font-weight:900;margin-bottom:4px">تتبع بسيط وسريع</div>
+          <div class="sub" style="margin:0">يعتمد الحساب على المسافة التقريبية وأقرب كابتن متاح من قاعدة البيانات.</div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="box">
+        <div><strong>مهم:</strong> إذا لم يتم العثور على كابتن متاح فسيظهر السعر التقديري فقط، ويمكن إرسال الطلب ووصوله لاحقًا للكباتن.</div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="box">
+        <div class="big" id="fareSummary">0 ر.س</div>
+        <div>السعر النهائي بعد التأكيد يعتمد على المسافة والتوافر.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA3wjOh1IZLS5cK8dH0fB6nwKH50iXvFhk",
+  authDomain: "ahmad-b755f.firebaseapp.com",
+  projectId: "ahmad-b755f",
+  storageBucket: "ahmad-b755f.firebasestorage.app",
+  messagingSenderId: "1086597289816",
+  appId: "1:1086597289816:web:efe60451f04837b75e772d",
+  measurementId: "G-E41VP56DLZ"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = s => document.querySelector(s);
+const toast = (msg, type='') => {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  t.style.background = type === 'error' ? '#ef4444' : '#111827';
+  if(type === 'success') t.style.background = '#16a34a';
+  setTimeout(()=>t.classList.remove('show'), 2400);
+};
+
+let map, pickupMarker, destMarker, pickup = null, destination = null, destinationLatLng = null;
+
+function haversineKm(a, b){
+  const toRad = d => d * Math.PI / 180;
+  const R = 6371;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const x = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+function nearestDistance(location, candidates){
+  let best = null;
+  let bestKm = null;
+  candidates.forEach(c => {
+    if(c.currentLocation && c.currentLocation.lat != null && c.currentLocation.lng != null){
+      const km = haversineKm(location, c.currentLocation);
+      if(bestKm == null || km < bestKm){ bestKm = km; best = c; }
+    }
+  });
+  return {best, bestKm};
+}
+
+async function loadCaptains(loc){
+  try{
+    const snap = await getDocs(query(collection(db,'users'), where('role','==','delivery')));
+    const list = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(u => u.available && u.currentLocation);
+    if(!list.length){
+      $('#captainBox').value = 'لا يوجد';
+      return;
+    }
+    const {best, bestKm} = loc ? nearestDistance(loc, list) : {best:list[0], bestKm:null};
+    $('#captainBox').value = best ? `${best.name || 'كابتن'} (${bestKm != null ? bestKm.toFixed(1) : '?'} كم)` : 'لا يوجد';
+  }catch(e){
+    $('#captainBox').value = 'تعذر البحث';
+  }
+}
+
+function estimatePrice(){
+  if(!pickup || !destinationLatLng){
+    $('#priceBox').value = '0 ر.س';
+    $('#distanceBox').value = '0 كم';
+    $('#fareSummary').textContent = '0 ر.س';
+    return;
+  }
+  const km = haversineKm(pickup, destinationLatLng);
+  const type = $('#rideType').value;
+  const base = type === 'comfort' ? 8 : 5;
+  const rate = type === 'comfort' ? 2.3 : 1.8;
+  const fare = Math.max(base, Math.round(base + km * rate));
+  $('#distanceBox').value = `${km.toFixed(1)} كم`;
+  $('#priceBox').value = `${fare} ر.س`;
+  $('#fareSummary').textContent = `${fare} ر.س`;
+}
+
+function initMap(){
+  map = L.map('map').setView([24.7136,46.6753], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OSM'}).addTo(map);
+
+  map.on('click', async (e) => {
+    pickup = {lat:e.latlng.lat, lng:e.latlng.lng};
+    if(pickupMarker) pickupMarker.remove();
+    pickupMarker = L.marker([pickup.lat, pickup.lng]).addTo(map);
+    $('#pickupText').value = `(${pickup.lat.toFixed(4)}, ${pickup.lng.toFixed(4)})`;
+    await loadCaptains(pickup);
+    estimatePrice();
+  });
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      pickup = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+      map.setView([pickup.lat, pickup.lng], 15);
+      if(pickupMarker) pickupMarker.remove();
+      pickupMarker = L.marker([pickup.lat, pickup.lng]).addTo(map);
+      $('#pickupText').value = 'موقعي الحالي';
+      await loadCaptains(pickup);
+      estimatePrice();
+    }, ()=>{}, {enableHighAccuracy:true, timeout:8000, maximumAge:0});
+  }
+}
+
+async function geocodeDestination(){
+  const q = $('#destText').value.trim();
+  if(!q){ toast('أدخل الوجهة أولاً', 'error'); return; }
+  try{
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`, {headers:{'Accept':'application/json'}});
+    const data = await res.json();
+    if(!data.length){ toast('لم يتم العثور على الوجهة', 'error'); return; }
+    const item = data[0];
+    destinationLatLng = {lat: parseFloat(item.lat), lng: parseFloat(item.lon)};
+    if(destMarker) destMarker.remove();
+    destMarker = L.marker([destinationLatLng.lat, destinationLatLng.lng]).addTo(map);
+    map.setView([destinationLatLng.lat, destinationLatLng.lng], 14);
+    estimatePrice();
+    await loadCaptains(pickup || destinationLatLng);
+    toast('تم تحديد الوجهة', 'success');
+  }catch(e){
+    toast('تعذر البحث عن الوجهة', 'error');
+  }
+}
+
+$('#searchDest').onclick = geocodeDestination;
+$('#rideType').onchange = estimatePrice;
+$('#refreshLoc').onclick = () => {
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      pickup = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+      map.setView([pickup.lat, pickup.lng], 15);
+      if(pickupMarker) pickupMarker.remove();
+      pickupMarker = L.marker([pickup.lat, pickup.lng]).addTo(map);
+      $('#pickupText').value = 'موقعي الحالي';
+      await loadCaptains(pickup);
+      estimatePrice();
+      toast('تم تحديث موقعك', 'success');
+    }, ()=>toast('تعذر الحصول على الموقع', 'error'), {enableHighAccuracy:true, timeout:8000, maximumAge:0});
+  }
+};
+
+$('#orderRide').onclick = async () => {
+  if(!pickup){ toast('حدد نقطة الانطلاق', 'error'); return; }
+  if(!destinationLatLng && !$('#destText').value.trim()){ toast('حدد الوجهة', 'error'); return; }
+  if(!destinationLatLng){
+    await geocodeDestination();
+    if(!destinationLatLng) return;
+  }
+  const user = auth.currentUser;
+  if(!user){ toast('يجب تسجيل الدخول أولاً', 'error'); location.href = 'index.html'; return; }
+  const fare = parseInt($('#priceBox').value) || 0;
+  try{
+    await addDoc(collection(db,'orders'), {
+      userId: user.uid,
+      userName: user.displayName || user.email || 'مستخدم',
+      type: 'ride',
+      rideType: $('#rideType').value,
+      storeName: 'طلب سيارة',
+      pickupText: $('#pickupText').value.trim(),
+      destinationText: $('#destText').value.trim(),
+      pickupLocation: pickup,
+      destinationLocation: destinationLatLng,
+      total: fare,
+      subtotal: fare,
+      deliveryFee: 0,
+      status: 'pending',
+      captainId: null,
+      captainName: null,
+      createdAt: serverTimestamp()
+    });
+    toast('تم إرسال طلب السيارة', 'success');
+  }catch(e){
+    toast('تعذر إرسال الطلب: ' + e.message, 'error');
+  }
+};
+
+onAuthStateChanged(auth, user => {
+  if(!user){ location.href = 'index.html'; return; }
+  initMap();
+  loadCaptains();
+});
+</script>
+</body>
+</html>
