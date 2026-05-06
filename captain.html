@@ -3,114 +3,290 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>ادبل | لوحة الكابتن</title>
-<meta name="description" content="لوحة الكابتن داخل ادبل لاستقبال الطلبات وتحديث الحالة وتفعيل/إيقاف التواجد.">
+<title>ادبل الكابتن - توصيل المشاوير</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-:root{--primary:#ef4444;--primary-dark:#dc2626;--primary-light:#fee2e2;--dark:#1A1D29;--gray:#6B7280;--light:#F8F9FB;--border:#E8EBF0;--success:#16a34a;--danger:#ef4444}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif}
-body{background:#f5f7fb;color:var(--dark)}
-.wrap{max-width:1100px;margin:0 auto;min-height:100dvh;padding:16px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-.back{width:44px;height:44px;border-radius:14px;background:white;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dark)}
-.hero{background:linear-gradient(135deg,#ef4444,#fb7185);color:white;border-radius:24px;padding:22px;margin-bottom:16px;box-shadow:0 14px 30px rgba(239,68,68,.16)}
-.hero h1{font-size:24px;margin-bottom:6px}
-.hero p{font-size:13px;opacity:.95;line-height:1.7}
-.grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:16px}
-.card{background:white;border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.04)}
-.card h2{font-size:18px;margin-bottom:10px}
-.sub{font-size:12px;color:var(--gray);margin-top:-4px;margin-bottom:12px;line-height:1.6}
-.btn{width:100%;border:none;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.btn-primary{background:var(--primary);color:#fff}
-.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
-.switch{display:flex;gap:8px;margin-bottom:12px}
-.switch button{flex:1}
-.input,.textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:14px;font:inherit;background:#fff;outline:none}
-.textarea{min-height:90px;resize:vertical}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
-.toggle{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:#fff7f7;border:1px solid #ffd0d0;margin-bottom:12px}
-.dot{width:14px;height:14px;border-radius:50%;background:#cbd5e1}
-.dot.on{background:var(--success)}
-.list{display:grid;gap:12px}
-.order{border:1px solid var(--border);border-radius:18px;padding:14px;background:#fff}
-.order h3{font-size:16px;margin-bottom:6px}
-.meta{font-size:12px;color:var(--gray);line-height:1.7}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:10px}
-.badge{padding:5px 10px;border-radius:100px;font-size:11px;font-weight:800}
-.badge.pending{background:#fef3c7;color:#92400e}
-.badge.accepted{background:#dbeafe;color:#1e40af}
-.badge.on_way{background:#ede9fe;color:#5b21b6}
-.actions{display:flex;gap:8px;margin-top:10px}
-.actions button{flex:1}
-.small{font-size:12px;color:var(--gray)}
-.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:1000;max-width:90%;text-align:center;font-size:13px}
-.toast.show{opacity:1;top:26px}
-@media (max-width:900px){.grid{grid-template-columns:1fr}}
+:root{
+  --primary:#CA8A04; --primary-dark:#A16207; --primary-light:#FEF9C3;
+  --accent:#FFD400; --dark:#0F172A; --gray:#64748B; --light:#F1F5F9; --border:#E2E8F0;
+  --success:#22C55E; --warning:#F59E0B; --danger:#EF4444;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:'Cairo',sans-serif}
+html,body{height:100%;overflow:hidden}
+body{background:var(--light);color:var(--dark);font-size:15px}
+.app{max-width:480px;margin:0 auto;height:100vh;background:white;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.08)}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;padding-bottom:80px}
+.screen.active{display:block;animation:fadeIn .3s}
+.auth-screen.active{display:flex;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.auth-screen{background:linear-gradient(160deg,#CA8A04 0%,#EAB308 50%,#FDE68A 100%);padding:40px 24px;flex-direction:column;justify-content:center;min-height:100vh}
+.auth-logo{width:120px;height:120px;margin:0 auto 20px;border-radius:30px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 40px rgba(0,0,0,.2);overflow:hidden}
+.auth-logo i{font-size:60px;color:var(--primary)}
+.auth-title{text-align:center;color:white;font-size:28px;font-weight:900;margin-bottom:8px}
+.auth-sub{text-align:center;color:rgba(255,255,255,.9);margin-bottom:32px;font-size:14px}
+.auth-card{background:white;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:80vh;overflow-y:auto}
+.tabs{display:flex;background:var(--light);border-radius:14px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;font-weight:600;color:var(--gray);cursor:pointer;font-size:14px}
+.tab.active{background:white;color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--gray);margin-bottom:6px;font-weight:600}
+.input-wrap{position:relative}
+.input-wrap i{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gray)}
+.input,.textarea{width:100%;padding:13px 40px 13px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;background:white}
+.input:focus,.textarea:focus{outline:none;border-color:var(--primary);background:var(--primary-light)}
+.textarea{min-height:70px;padding:13px 14px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-success{background:var(--success);color:white}
+.btn-danger{background:var(--danger);color:white}
+.btn-ghost{background:var(--light);color:var(--dark);border:1px solid var(--border)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.err{background:#FEF2F2;color:var(--danger);padding:10px;border-radius:10px;font-size:13px;margin-bottom:12px;display:none}
+.err.show{display:block}
+
+.header{background:white;padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.header h2{font-size:17px;font-weight:800;flex:1}
+.icon-btn{width:40px;height:40px;border-radius:12px;background:var(--light);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dark);font-size:16px}
+
+.home-hero{background:linear-gradient(135deg,var(--primary),#EAB308);padding:20px;color:white;border-bottom-left-radius:28px;border-bottom-right-radius:28px;margin-bottom:16px}
+.home-hero .greet{font-size:13px;opacity:.9}
+.home-hero .name{font-size:20px;font-weight:800;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.stat{background:rgba(255,255,255,.18);backdrop-filter:blur(8px);padding:12px;border-radius:14px;text-align:center}
+.stat .v{font-size:20px;font-weight:800}
+.stat .l{font-size:11px;opacity:.85;margin-top:3px}
+.section{padding:0 20px;margin-bottom:16px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-head h3{font-size:16px;font-weight:800}
+.tabs-pills{display:flex;gap:8px;padding:0 20px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.tabs-pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 16px;background:white;border:1.5px solid var(--border);border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--dark)}
+.pill.active{background:var(--primary);color:white;border-color:var(--primary)}
+
+.ride-card{background:white;padding:14px;border-radius:14px;margin-bottom:10px;border:1px solid var(--border);cursor:pointer}
+.ride-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ride-head h5{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.badge{padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;background:#FEF3C7;color:#92400E}
+.badge.searching{background:#FEF3C7;color:#92400E}
+.badge.accepted{background:#DBEAFE;color:#1E40AF}
+.badge.in_progress{background:#E0E7FF;color:#4338CA}
+.badge.completed{background:#D1FAE5;color:#065F46}
+.badge.cancelled{background:#FEE2E2;color:#991B1B}
+.ride-card .row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--gray);margin-bottom:4px}
+.ride-card .total{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.ride-card .total .val{color:var(--primary)}
+
+.total-card{background:white;padding:16px;border-radius:16px;margin-bottom:10px;border:1px solid var(--border)}
+.total-card h4{font-size:14px;margin-bottom:8px}
+.total-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
+.total-row.big{font-size:16px;font-weight:800;border-top:1px dashed var(--border);padding-top:8px;margin-top:8px}
+
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);display:flex;padding:8px 0;z-index:40;max-width:480px;margin:0 auto}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px;cursor:pointer;color:var(--gray);font-size:11px;font-weight:600}
+.nav-item i{font-size:18px}
+.nav-item.active{color:var(--primary)}
+
+.empty{text-align:center;padding:50px 20px;color:var(--gray)}
+.empty i{font-size:52px;color:var(--border);margin-bottom:12px}
+.empty h4{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:5px}
+
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:white;padding:12px 22px;border-radius:100px;font-size:13px;z-index:200;opacity:0;transition:.3s;max-width:90%}
+.toast.show{opacity:1;top:30px}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+
+.profile-head{text-align:center;padding:28px 20px 20px;background:linear-gradient(135deg,var(--primary),#EAB308);color:white;border-bottom-left-radius:28px;border-bottom-right-radius:28px;margin-bottom:16px}
+.avatar-big{width:80px;height:80px;margin:0 auto 12px;border-radius:50%;background:white;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700}
+.menu-item{background:white;padding:14px 16px;border-radius:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--border)}
+.menu-item .ic{width:38px;height:38px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:15px}
+.menu-item span{flex:1;font-weight:600;font-size:14px}
+
+.switch-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:white;border-radius:12px;margin-bottom:8px;border:1px solid var(--border)}
+.switch-row .info{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+.switch{position:relative;width:50px;height:28px;background:var(--border);border-radius:100px;cursor:pointer;transition:.2s}
+.switch.on{background:var(--success)}
+.switch::after{content:'';position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:white;transition:.2s}
+.switch.on::after{right:25px}
+.status-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--light);border-radius:12px;margin-bottom:14px;font-weight:700;font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+.actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="back" onclick="location.href='index.html'"><i class="fas fa-arrow-right"></i></button>
-      <div>
-        <div style="font-weight:900;font-size:20px">لوحة الكابتن</div>
-        <div style="color:var(--gray);font-size:13px">استقبال الطلبات وتحديث التواجد</div>
-      </div>
+<div class="app" id="app">
+
+<div id="authScreen" class="screen active auth-screen">
+  <div class="auth-logo"><i class="fas fa-taxi"></i></div>
+  <h1 class="auth-title">بوابة الكابتن</h1>
+  <p class="auth-sub">انضم كسائق واستقبل المشاوير</p>
+  <div class="auth-card">
+    <div class="tabs">
+      <div class="tab active" data-tab="login">دخول</div>
+      <div class="tab" data-tab="register">حساب جديد</div>
     </div>
-    <button class="back" id="logoutBtn"><i class="fas fa-right-from-bracket"></i></button>
-  </div>
-
-  <div class="hero">
-    <h1>إدارة الطلبات الواردة</h1>
-    <p>هذه الصفحة مستقلة عن الرئيسية. تظهر هنا فقط للكابتن المسجل بحساب Role = captain داخل Firebase.</p>
-  </div>
-
-  <div id="loggedOut" class="card">
-    <h2>تسجيل دخول الكابتن</h2>
-    <div class="sub">إذا لم يكن الحساب كابتن فلن تظهر لوحة التحكم.</div>
-    <div class="field"><label>البريد الإلكتروني</label><input id="email" class="input" type="email"></div>
-    <div class="field"><label>كلمة المرور</label><input id="pass" class="input" type="password"></div>
-    <button class="btn btn-primary" id="loginBtn"><i class="fas fa-right-to-bracket"></i> دخول</button>
-  </div>
-
-  <div id="dashboard" class="grid" style="display:none">
-    <section class="card">
-      <h2>الحالة</h2>
-      <div class="toggle">
-        <div class="dot" id="statusDot"></div>
-        <div style="flex:1">
-          <div style="font-weight:900" id="onlineTitle">غير متصل</div>
-          <div class="small" id="onlineSub">فعّل التواجد لكي تصلك الطلبات.</div>
+    <div class="err" id="authErr"></div>
+    <div id="loginForm">
+      <div class="field"><label>البريد الإلكتروني</label><div class="input-wrap"><i class="far fa-envelope"></i><input id="loginEmail" class="input" type="email"></div></div>
+      <div class="field"><label>كلمة المرور</label><div class="input-wrap"><i class="fas fa-lock"></i><input id="loginPass" class="input" type="password"></div></div>
+      <button type="button" class="btn btn-primary" id="loginBtn"><i class="fas fa-right-to-bracket"></i> دخول</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <p style="font-size:12px;color:var(--gray);margin-bottom:14px;text-align:center;font-weight:600">📋 يرجى تعبئة جميع البيانات بدقة</p>
+      <p style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:8px">✅ البيانات الأساسية</p>
+      <div class="field"><label>الاسم الكامل *</label><div class="input-wrap"><i class="far fa-user"></i><input id="regName" class="input"></div></div>
+      <div class="field">
+        <label>رقم الجوال *</label>
+        <div style="display:flex;gap:6px;align-items:center;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:white">
+          <span style="padding:13px 10px;background:#f1f5f9;font-size:13px;font-weight:600;border-left:1px solid var(--border)">🇸🇾 +963</span>
+          <input id="regPhone" type="tel" placeholder="912345678" style="flex:1;border:none;outline:none;padding:13px 10px;font-size:14px;font-family:inherit;background:transparent">
         </div>
       </div>
-      <button class="btn btn-primary" id="toggleOnline"><i class="fas fa-circle"></i> تشغيل / إيقاف</button>
-      <div style="height:12px"></div>
-      <div class="card" style="padding:14px;background:#fafafa">
-        <div style="font-weight:900;margin-bottom:4px">الموقع الحي</div>
-        <div class="small" id="locText">لم يتم التحديث بعد</div>
-      </div>
-    </section>
+      <div class="field"><label>البريد الإلكتروني *</label><div class="input-wrap"><i class="far fa-envelope"></i><input id="regEmail" class="input" type="email"></div></div>
+      <div class="field"><label>كلمة المرور *</label><div class="input-wrap"><i class="fas fa-lock"></i><input id="regPass" class="input" type="password" placeholder="6 أحرف على الأقل"></div></div>
 
-    <section class="card">
-      <div class="switch">
-        <button class="btn btn-primary" id="showIncoming">الطلبات الجديدة</button>
-        <button class="btn btn-outline" id="showAccepted">الطلبات المقبولة</button>
+      <p style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:8px;margin-top:12px">🔒 بيانات التحقق</p>
+      <div class="field"><label>رقم الهوية *</label><div class="input-wrap"><i class="fas fa-id-card"></i><input id="regIdNumber" class="input"></div></div>
+      <div class="field"><label>صورة الهوية (الوجه الأمامي) *</label>
+        <div style="border:1.5px dashed var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;background:#fafafa" onclick="document.getElementById('regIdFront').click()">
+          <i class="fas fa-camera" style="color:var(--gray);font-size:20px;display:block;margin-bottom:4px"></i>
+          <span id="regIdFrontLabel" style="font-size:12px;color:var(--gray)">اضغط لاختيار صورة</span>
+          <input id="regIdFront" type="file" accept="image/*" style="display:none" onchange="updateFileLabel('regIdFront','regIdFrontLabel')">
+        </div>
       </div>
-      <div class="sub">اضغط على أي طلب واتخذ إجراء القبول أو الرفض.</div>
-      <div id="list" class="list"></div>
-    </section>
+      <div class="field"><label>صورة الهوية (الوجه الخلفي) *</label>
+        <div style="border:1.5px dashed var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;background:#fafafa" onclick="document.getElementById('regIdBack').click()">
+          <i class="fas fa-camera" style="color:var(--gray);font-size:20px;display:block;margin-bottom:4px"></i>
+          <span id="regIdBackLabel" style="font-size:12px;color:var(--gray)">اضغط لاختيار صورة</span>
+          <input id="regIdBack" type="file" accept="image/*" style="display:none" onchange="updateFileLabel('regIdBack','regIdBackLabel')">
+        </div>
+      </div>
+      <div class="field"><label>صورة شخصية (سيلفي) *</label>
+        <div style="border:1.5px dashed var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;background:#fafafa" onclick="document.getElementById('regSelfie').click()">
+          <i class="fas fa-user-circle" style="color:var(--gray);font-size:20px;display:block;margin-bottom:4px"></i>
+          <span id="regSelfieLabel" style="font-size:12px;color:var(--gray)">اضغط لاختيار صورة</span>
+          <input id="regSelfie" type="file" accept="image/*" capture="user" style="display:none" onchange="updateFileLabel('regSelfie','regSelfieLabel')">
+        </div>
+      </div>
+      <div class="field"><label>صورة رخصة القيادة *</label>
+        <div style="border:1.5px dashed var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;background:#fafafa" onclick="document.getElementById('regLicense').click()">
+          <i class="fas fa-id-card-clip" style="color:var(--gray);font-size:20px;display:block;margin-bottom:4px"></i>
+          <span id="regLicenseLabel" style="font-size:12px;color:var(--gray)">اضغط لاختيار صورة</span>
+          <input id="regLicense" type="file" accept="image/*" style="display:none" onchange="updateFileLabel('regLicense','regLicenseLabel')">
+        </div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:8px;margin-top:12px">🚗 بيانات السيارة</p>
+      <div class="field"><label>نوع السيارة *</label><div class="input-wrap"><i class="fas fa-car"></i><input id="regCar" class="input" placeholder="مثال: كيا سيراتو 2020"></div></div>
+      <div class="field"><label>رقم اللوحة *</label><div class="input-wrap"><i class="fas fa-hashtag"></i><input id="regPlate" class="input"></div></div>
+      <div class="field"><label>صورة السيارة *</label>
+        <div style="border:1.5px dashed var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;background:#fafafa" onclick="document.getElementById('regVehicleImg').click()">
+          <i class="fas fa-car-side" style="color:var(--gray);font-size:20px;display:block;margin-bottom:4px"></i>
+          <span id="regVehicleImgLabel" style="font-size:12px;color:var(--gray)">اضغط لاختيار صورة</span>
+          <input id="regVehicleImg" type="file" accept="image/*" style="display:none" onchange="updateFileLabel('regVehicleImg','regVehicleImgLabel')">
+        </div>
+      </div>
+      <div class="field">
+        <label>المدينة *</label>
+        <div class="input-wrap"><i class="fas fa-map-marker-alt"></i>
+          <select id="regCity" class="input" style="padding-right:40px">
+            <option value="">اختر مدينتك</option>
+            <option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option>
+            <option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option>
+            <option>الحسكة</option><option>السويداء</option><option>القنيطرة</option><option>إدلب</option><option>درعا</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="regBtn" style="margin-top:8px"><i class="fas fa-user-plus"></i> إنشاء حساب كابتن</button>
+    </div>
   </div>
 </div>
 
+<div id="pendingScreen" class="screen auth-screen" style="text-align:center">
+  <div style="background:white;border-radius:28px;padding:36px 28px;max-width:360px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.15)">
+    <div style="width:90px;height:90px;margin:0 auto 20px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;font-size:40px">⏳</div>
+    <h2 style="font-size:22px;font-weight:900;color:#0F172A;margin-bottom:10px">جارٍ التحقق من حسابك</h2>
+    <p style="font-size:14px;color:#64748B;line-height:1.7;margin-bottom:18px">تم استلام بياناتك. سيقوم فريقنا بمراجعة معلوماتك قريباً.</p>
+    <div style="background:#FEF3C7;border-radius:14px;padding:14px;margin-bottom:20px;border:1px solid #FDE68A">
+      <p style="font-size:13px;color:#92400E;font-weight:600">⏱️ وقت المراجعة المتوقع: 1-5 ساعات</p>
+    </div>
+    <button onclick="window.logout()" style="margin-top:8px;padding:11px 24px;border:1.5px solid #E2E8F0;border-radius:12px;background:white;color:#64748B;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer"><i class="fas fa-right-from-bracket"></i> تسجيل الخروج</button>
+  </div>
+</div>
+
+<div id="homeScreen" class="screen">
+  <div class="home-hero">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div><div class="greet">مرحباً</div><div class="name" id="helloName">الكابتن</div></div>
+      <div style="text-align:left"><span style="font-size:11px;opacity:.85">الحالة</span><div id="statusLabel" style="font-weight:700">غير متصل</div></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="sTotal">0</div><div class="l">إجمالي</div></div>
+      <div class="stat"><div class="v" id="sDone">0</div><div class="l">مكتمل</div></div>
+      <div class="stat"><div class="v" id="sActive">0</div><div class="l">نشط</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="switch-row">
+      <div class="info"><i class="fas fa-circle-dot" id="availIcon" style="color:var(--gray)"></i> متصل ومتاح</div>
+      <div class="switch" id="availSwitch"></div>
+    </div>
+  </div>
+
+  <div class="tabs-pills" id="tabsPills">
+    <div class="pill active" data-filter="incoming">الواردة</div>
+    <div class="pill" data-filter="active">رحلتي الحالية</div>
+    <div class="pill" data-filter="done">المكتملة</div>
+  </div>
+
+  <div class="section"><div id="ridesList"></div></div>
+</div>
+
+<div id="rideScreen" class="screen">
+  <div class="header">
+    <button class="icon-btn" onclick="showScreen('homeScreen')"><i class="fas fa-chevron-right"></i></button>
+    <h2>تفاصيل الرحلة</h2>
+  </div>
+  <div style="padding:16px" id="rideBody"></div>
+</div>
+
+<div id="profileScreen" class="screen">
+  <div class="profile-head">
+    <div class="avatar-big" id="profAvatar">-</div>
+    <h3 id="profName" style="font-size:18px;font-weight:800">-</h3>
+    <p id="profEmail" style="font-size:13px;opacity:.9">-</p>
+    <p id="profCar" style="font-size:12px;opacity:.85;margin-top:4px"></p>
+  </div>
+  <div style="padding:0 16px">
+    <div class="menu-item"><div class="ic"><i class="fas fa-chart-line"></i></div><span>الأرباح</span></div>
+    <div class="menu-item"><div class="ic"><i class="fas fa-star"></i></div><span>التقييمات</span></div>
+    <div class="menu-item"><div class="ic"><i class="fas fa-headset"></i></div><span>الدعم</span></div>
+    <div class="menu-item" onclick="logout()" style="color:var(--danger)">
+      <div class="ic" style="background:#FEE2E2;color:var(--danger)"><i class="fas fa-right-from-bracket"></i></div>
+      <span>تسجيل الخروج</span>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav" id="bottomNav" style="display:none">
+  <div class="nav-item active" data-nav="homeScreen"><i class="fas fa-house"></i><span>الرئيسية</span></div>
+  <div class="nav-item" data-nav="profileScreen"><i class="far fa-user"></i><span>حسابي</span></div>
+</div>
+
+</div>
 <div class="toast" id="toast"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA3wjOh1IZLS5cK8dH0fB6nwKH50iXvFhk",
@@ -118,171 +294,268 @@ const firebaseConfig = {
   projectId: "ahmad-b755f",
   storageBucket: "ahmad-b755f.firebasestorage.app",
   messagingSenderId: "1086597289816",
-  appId: "1:1086597289816:web:efe60451f04837b75e772d",
-  measurementId: "G-E41VP56DLZ"
+  appId: "1:1086597289816:web:efe60451f04837b75e772d"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
+const SEARCH_RADIUS_KM = 30;
 const $ = s => document.querySelector(s);
-const toast = (m, type='') => {
-  const t = $('#toast');
-  t.textContent = m;
-  t.className = 'toast show';
-  t.style.background = type === 'error' ? '#ef4444' : '#111827';
-  if(type === 'success') t.style.background = '#16a34a';
-  setTimeout(()=>t.classList.remove('show'), 2500);
+const $$ = s => document.querySelectorAll(s);
+window.toast = (m,t='') => { const e=$('#toast'); e.textContent=m; e.className='toast show '+t; setTimeout(()=>e.classList.remove('show'),2500); };
+const km = (a,b)=>{ if(!a||!b) return null; const R=6371,toR=x=>x*Math.PI/180; const dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng); const x=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(x)); };
+function esc(s){return String(s||'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]))}
+
+let currentUser=null, userData=null, currentFilter='incoming', online=false, locWatch=null, currentLoc=null;
+let ridesUnsub=null, allRides=[], activeRideId=null, currentRide=null;
+
+window.showScreen = (id) => {
+  $$('.screen').forEach(s=>s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+  $$('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.nav===id));
+  if($('#bottomNav')) $('#bottomNav').style.display = currentUser && userData?.status==='active' ? 'flex' : 'none';
 };
+$$('.nav-item').forEach(n=>n.addEventListener('click',()=>showScreen(n.dataset.nav)));
+$$('.tab').forEach(t=>t.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  $('#loginForm').style.display = t.dataset.tab==='login'?'block':'none';
+  $('#registerForm').style.display = t.dataset.tab==='register'?'block':'none';
+  $('#authErr').classList.remove('show');
+}));
 
-let currentUser = null;
-let roleOk = false;
-let available = false;
-let locationWatch = null;
-let currentLocation = null;
-let incomingUnsub = null;
-let acceptedUnsub = null;
-let incomingOrders = [];
-let acceptedOrders = [];
-let view = 'incoming';
-
-function render(){
-  const list = view === 'incoming' ? incomingOrders : acceptedOrders;
-  $('#showIncoming').className = view === 'incoming' ? 'btn btn-primary' : 'btn btn-outline';
-  $('#showAccepted').className = view === 'accepted' ? 'btn btn-primary' : 'btn btn-outline';
-  $('#list').innerHTML = list.length ? list.map(o => `
-    <div class="order">
-      <div class="row">
-        <h3>${o.userName || 'عميل'} · ${o.total || 0} ر.س</h3>
-        <span class="badge ${o.status}">${o.status}</span>
-      </div>
-      <div class="meta">
-        <div><strong>النوع:</strong> ${o.rideType === 'comfort' ? 'مريح' : 'اقتصادي'}</div>
-        <div><strong>الانطلاق:</strong> ${o.pickupText || '-'}</div>
-        <div><strong>الوجهة:</strong> ${o.destinationText || '-'}</div>
-      </div>
-      <div class="actions">
-        ${view === 'incoming' ? `<button class="btn btn-primary accept" data-id="${o.id}"><i class="fas fa-check"></i> قبول</button>` : ''}
-        <button class="btn btn-outline reject" data-id="${o.id}"><i class="fas fa-xmark"></i> رفض</button>
-      </div>
-    </div>
-  `).join('') : `<div class="card" style="background:#fafafa"><div class="small">لا توجد طلبات في هذا القسم الآن.</div></div>`;
-  document.querySelectorAll('.accept').forEach(b => b.onclick = () => takeAction(b.dataset.id, 'accepted'));
-  document.querySelectorAll('.reject').forEach(b => b.onclick = () => takeAction(b.dataset.id, 'cancelled'));
-}
-
-async function takeAction(id, status){
-  try{
-    await updateDoc(doc(db,'orders',id), {
-      status,
-      captainId: currentUser.uid,
-      captainName: currentUser.email,
-      updatedAt: serverTimestamp()
-    });
-    toast(status === 'accepted' ? 'تم قبول الطلب' : 'تم رفض الطلب', 'success');
-  }catch(e){
-    toast('تعذر التحديث: ' + e.message, 'error');
-  }
-}
-
-async function loadOrders(){
-  if(incomingUnsub) incomingUnsub();
-  if(acceptedUnsub) acceptedUnsub();
-  incomingUnsub = onSnapshot(query(collection(db,'orders'), where('type','==','ride'), where('status','==','pending')), snap => {
-    incomingOrders = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    if(view === 'incoming') render();
-  });
-  acceptedUnsub = onSnapshot(query(collection(db,'orders'), where('type','==','ride'), where('status','==','accepted')), snap => {
-    acceptedOrders = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    if(view === 'accepted') render();
+window.updateFileLabel = (inputId,labelId) => {
+  const f = document.getElementById(inputId).files[0];
+  if(f) document.getElementById(labelId).textContent = '✅ '+f.name;
+};
+function compressImage(file, maxWidth=350, quality=0.5){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const ratio=Math.min(maxWidth/img.width,maxWidth/img.height,1);c.width=img.width*ratio;c.height=img.height*ratio;c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',quality));};img.src=e.target.result;};
+    r.readAsDataURL(file);
   });
 }
+function showErr(m){const e=$('#authErr');e.textContent=m;e.classList.add('show')}
+function mapErr(e){const c=e.code||'';if(c.includes('email-already'))return 'البريد مسجل';if(c.includes('invalid-email'))return 'بريد غير صالح';if(c.includes('weak-password'))return 'كلمة مرور ضعيفة';if(c.includes('wrong-password')||c.includes('invalid-credential')||c.includes('user-not-found'))return 'بيانات غير صحيحة';return e.message||'خطأ'}
 
-async function setOnlineState(state){
-  available = state;
-  $('#statusDot').classList.toggle('on', available);
-  $('#onlineTitle').textContent = available ? 'متصل الآن' : 'غير متصل';
-  $('#onlineSub').textContent = available ? 'تصلك الطلبات الجديدة ويتم تحديث موقعك مباشرة.' : 'أوقف التواجد مؤقتًا.';
-  try{
-    await updateDoc(doc(db,'users',currentUser.uid), {
-      available,
-      currentLocation,
-      role: 'delivery',
-      updatedAt: serverTimestamp()
-    });
-  }catch(e){}
-  if(available) startTracking();
-  else stopTracking();
-}
-
-function startTracking(){
-  if(!navigator.geolocation) return;
-  stopTracking();
-  locationWatch = navigator.geolocation.watchPosition(async pos => {
-    currentLocation = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-    $('#locText').textContent = `${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}`;
-    try{
-      await updateDoc(doc(db,'users',currentUser.uid), {currentLocation, available, updatedAt: serverTimestamp()});
-    }catch(e){}
-  }, err => {
-    toast('تعذر تحديث الموقع', 'error');
-  }, {enableHighAccuracy:true, maximumAge:2000, timeout:10000});
-}
-
-function stopTracking(){
-  if(locationWatch !== null && navigator.geolocation){
-    navigator.geolocation.clearWatch(locationWatch);
-    locationWatch = null;
-  }
-}
-
-$('#loginBtn').onclick = async () => {
-  const email = $('#email').value.trim();
-  const pass = $('#pass').value;
-  if(!email || !pass){ toast('أدخل بيانات الدخول', 'error'); return; }
-  try{
-    await signInWithEmailAndPassword(auth, email, pass);
-  }catch(e){
-    toast('تعذر الدخول: ' + e.message, 'error');
-  }
-};
-
-$('#toggleOnline').onclick = () => setOnlineState(!available);
-$('#showIncoming').onclick = () => { view = 'incoming'; render(); };
-$('#showAccepted').onclick = () => { view = 'accepted'; render(); };
-$('#logoutBtn').onclick = async () => { try{ await signOut(auth); location.reload(); } catch(e){} };
-
-onAuthStateChanged(auth, async user => {
-  if(!user){
-    $('#loggedOut').style.display = 'block';
-    $('#dashboard').style.display = 'none';
-    return;
-  }
-  currentUser = user;
-  const snap = await getDoc(doc(db,'users',user.uid));
-  const data = snap.exists() ? snap.data() : null;
-  if(!data || data.role !== 'captain'){
-    $('#loggedOut').style.display = 'block';
-    $('#dashboard').style.display = 'none';
-    toast('هذا الحساب ليس حساب كابتن', 'error');
-    await signOut(auth);
-    return;
-  }
-  roleOk = true;
-  $('#loggedOut').style.display = 'none';
-  $('#dashboard').style.display = 'grid';
-  available = !!data.available;
-  currentLocation = data.currentLocation || null;
-  $('#statusDot').classList.toggle('on', available);
-  $('#onlineTitle').textContent = available ? 'متصل الآن' : 'غير متصل';
-  $('#onlineSub').textContent = available ? 'تصلك الطلبات الجديدة ويتم تحديث موقعك مباشرة.' : 'أوقف التواجد مؤقتًا.';
-  $('#locText').textContent = currentLocation ? `${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}` : 'لم يتم تحديد الموقع';
-  loadOrders();
-  if(available) startTracking();
+$('#loginBtn').addEventListener('click', async ()=>{
+  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value;
+  if(!email||!pass)return showErr('أدخل البيانات');
+  $('#loginBtn').disabled=true;
+  try{await signInWithEmailAndPassword(auth,email,pass)}catch(e){showErr(mapErr(e))}
+  $('#loginBtn').disabled=false;
 });
 
-window.addEventListener('beforeunload', stopTracking);
+$('#regBtn').addEventListener('click', async ()=>{
+  const name=$('#regName').value.trim(), phoneRaw=$('#regPhone').value.trim(), email=$('#regEmail').value.trim(),
+        pass=$('#regPass').value, idNumber=$('#regIdNumber').value.trim(),
+        car=$('#regCar').value.trim(), plate=$('#regPlate').value.trim(), city=$('#regCity').value.trim();
+  if(!name||!phoneRaw||!email||!pass||!idNumber||!car||!plate||!city) return showErr('يرجى تعبئة جميع الحقول');
+  if(pass.length<6) return showErr('كلمة المرور 6 أحرف على الأقل');
+  if(!/^\d{9,10}$/.test(phoneRaw)) return showErr('رقم هاتف غير صحيح');
+  const phone='+963'+phoneRaw;
+  const idF=document.getElementById('regIdFront').files[0], idB=document.getElementById('regIdBack').files[0],
+        sel=document.getElementById('regSelfie').files[0], lic=document.getElementById('regLicense').files[0],
+        veh=document.getElementById('regVehicleImg').files[0];
+  if(!idF||!idB||!sel||!lic||!veh) return showErr('يرجى رفع جميع الصور المطلوبة');
+  $('#regBtn').disabled=true; $('#regBtn').textContent='جارٍ إنشاء الحساب...';
+  try{
+    const [selfieB,idFB,idBB,licB,vehB] = await Promise.all([compressImage(sel),compressImage(idF),compressImage(idB),compressImage(lic),compressImage(veh)]);
+    const cred = await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,'users',cred.user.uid),{
+      uid:cred.user.uid, name, phone, email, idNumber, car, plate, city,
+      selfie:selfieB, idFront:idFB, idBack:idBB, license:licB, vehicleImage:vehB,
+      role:'captain', status:'pending', online:false, location:null,
+      createdAt: serverTimestamp()
+    });
+  }catch(e){showErr(mapErr(e)); $('#regBtn').disabled=false; $('#regBtn').innerHTML='<i class="fas fa-user-plus"></i> إنشاء حساب كابتن';}
+});
+
+window.logout = async ()=>{ try{await signOut(auth)}catch(e){} };
+
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    currentUser=user;
+    const snap=await getDoc(doc(db,'users',user.uid));
+    if(snap.exists()) userData=snap.data();
+    else { userData={uid:user.uid,name:user.email,email:user.email,role:'captain',status:'pending',online:false}; await setDoc(doc(db,'users',user.uid),userData,{merge:true}); }
+    if(userData.role!=='captain'){ toast('هذا ليس حساب كابتن','error'); await signOut(auth); return; }
+    if(userData.status==='rejected'){ toast('تم رفض حسابك','error'); await signOut(auth); return; }
+    if(userData.status==='pending'){
+      $$('.screen').forEach(s=>s.classList.remove('active'));
+      $('#pendingScreen').classList.add('active');
+      $('#bottomNav').style.display='none';
+      return;
+    }
+    initApp();
+  } else {
+    currentUser=null; userData=null; stopWatching();
+    $('#bottomNav').style.display='none';
+    showScreen('authScreen');
+  }
+});
+
+function initApp(){
+  $('#helloName').textContent = userData.name||'الكابتن';
+  $('#profAvatar').textContent = (userData.name||'?').charAt(0);
+  $('#profName').textContent = userData.name||'-';
+  $('#profEmail').textContent = userData.email||'-';
+  $('#profCar').textContent = userData.car ? `${userData.car} - ${userData.plate||''}` : '';
+  online = !!userData.online;
+  updateAvail();
+  if(online) startWatching();
+  showScreen('homeScreen');
+  subscribeRides();
+}
+
+function updateAvail(){
+  $('#availSwitch').classList.toggle('on', online);
+  $('#availIcon').style.color = online?'var(--success)':'var(--gray)';
+  $('#statusLabel').textContent = online?'متصل':'غير متصل';
+}
+
+$('#availSwitch').addEventListener('click', async ()=>{
+  if(online){ await goOffline(); } else { await goOnline(); }
+});
+
+async function goOnline(){
+  if(!navigator.geolocation) return toast('GPS غير مدعوم','error');
+  try{
+    const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:10000}));
+    currentLoc = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+    await updateDoc(doc(db,'users',currentUser.uid),{online:true, location:currentLoc, lastSeen:serverTimestamp()});
+    online=true; updateAvail(); startWatching(); toast('أنت متصل الآن','success');
+  }catch(e){toast('تعذّر تحديد موقعك','error')}
+}
+async function goOffline(){
+  await updateDoc(doc(db,'users',currentUser.uid),{online:false, lastSeen:serverTimestamp()});
+  online=false; updateAvail(); stopWatching();
+}
+function startWatching(){
+  if(locWatch) return;
+  locWatch = navigator.geolocation.watchPosition(async pos=>{
+    currentLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    try{await updateDoc(doc(db,'users',currentUser.uid),{location:currentLoc,lastSeen:serverTimestamp()})}catch(_){}
+    if(activeRideId){ try{await updateDoc(doc(db,'rides',activeRideId),{captainLocation:currentLoc})}catch(_){} }
+  },()=>{},{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+}
+function stopWatching(){ if(locWatch){ navigator.geolocation.clearWatch(locWatch); locWatch=null; } }
+
+$$('#tabsPills .pill').forEach(p=>p.addEventListener('click',()=>{
+  $$('#tabsPills .pill').forEach(x=>x.classList.remove('active'));
+  p.classList.add('active');
+  currentFilter=p.dataset.filter;
+  renderRides();
+}));
+
+function subscribeRides(){
+  if(ridesUnsub) ridesUnsub();
+  ridesUnsub = onSnapshot(collection(db,'rides'),(snap)=>{
+    allRides = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const mine = allRides.filter(r=>r.captainId===currentUser.uid);
+    $('#sTotal').textContent = mine.length;
+    $('#sDone').textContent = mine.filter(r=>r.status==='completed').length;
+    $('#sActive').textContent = mine.filter(r=>['accepted','arrived','in_progress'].includes(r.status)).length;
+    const active = mine.find(r=>['accepted','arrived','in_progress'].includes(r.status));
+    activeRideId = active?.id || null;
+    renderRides();
+  });
+}
+
+function statusLabel(s){return {searching:'بحث',accepted:'مقبول - في الطريق للعميل',arrived:'وصل للعميل',in_progress:'الرحلة جارية',completed:'مكتمل',cancelled:'ملغي'}[s]||s}
+
+function renderRides(){
+  let list=[];
+  if(currentFilter==='incoming'){
+    if(!online){ $('#ridesList').innerHTML=`<div class="empty"><i class="fas fa-toggle-off"></i><h4>أنت غير متصل</h4><p>فعّل الاتصال لاستقبال الطلبات</p></div>`; return; }
+    list = allRides.filter(r=>r.status==='searching')
+      .map(r=>({...r,_capKm: currentLoc?km(currentLoc,r.pickup):null}))
+      .filter(r=>r._capKm===null||r._capKm<=SEARCH_RADIUS_KM)
+      .sort((a,b)=>(a._capKm||999)-(b._capKm||999));
+  } else if(currentFilter==='active'){
+    list = allRides.filter(r=>r.captainId===currentUser.uid && ['accepted','arrived','in_progress'].includes(r.status));
+  } else {
+    list = allRides.filter(r=>r.captainId===currentUser.uid && ['completed','cancelled'].includes(r.status));
+  }
+  if(!list.length){ $('#ridesList').innerHTML=`<div class="empty"><i class="fas fa-inbox"></i><h4>لا توجد رحلات</h4></div>`; return; }
+  $('#ridesList').innerHTML = list.map(r=>`
+    <div class="ride-card" data-id="${r.id}">
+      <div class="ride-head"><h5><i class="fas fa-user" style="color:var(--primary)"></i> ${esc(r.customerName||'عميل')}</h5><span class="badge ${r.status}">${statusLabel(r.status)}</span></div>
+      <div class="row"><i class="fas fa-route" style="width:14px"></i> ${(+r.routeKm||0).toFixed(1)} كم</div>
+      ${r._capKm!=null?`<div class="row"><i class="fas fa-location-arrow" style="width:14px"></i> المسافة إليك: ${r._capKm.toFixed(2)} كم</div>`:''}
+      <div class="total"><span>السعر</span><span class="val">${(+r.price||0).toLocaleString()} ل.س</span></div>
+    </div>`).join('');
+  $$('#ridesList .ride-card').forEach(c=>c.addEventListener('click',()=>openRide(c.dataset.id)));
+}
+
+let rideUnsub=null;
+function openRide(id){
+  if(rideUnsub) rideUnsub();
+  rideUnsub = onSnapshot(doc(db,'rides',id),(snap)=>{
+    if(!snap.exists()) return;
+    currentRide = {id:snap.id,...snap.data()};
+    renderRideDetail();
+  });
+  showScreen('rideScreen');
+}
+
+function renderRideDetail(){
+  const r=currentRide;
+  const pickupNav = `https://www.google.com/maps/dir/?api=1&destination=${r.pickup.lat},${r.pickup.lng}&travelmode=driving&dir_action=navigate`;
+  const destNav = `https://www.google.com/maps/dir/?api=1&destination=${r.destination.lat},${r.destination.lng}&travelmode=driving&dir_action=navigate`;
+  let actions='';
+  if(r.status==='searching') actions = `<button class="btn btn-success" id="acceptBtn"><i class="fas fa-check"></i> قبول الرحلة</button>`;
+  else if(r.status==='accepted' && r.captainId===currentUser.uid) actions = `<button class="btn btn-success" id="markArrived"><i class="fas fa-flag-checkered"></i> وصلت للعميل</button>`;
+  else if(r.status==='arrived' && r.captainId===currentUser.uid) actions = `<button class="btn btn-primary" id="startRide"><i class="fas fa-play"></i> بدء الرحلة</button>`;
+  else if(r.status==='in_progress' && r.captainId===currentUser.uid) actions = `<button class="btn btn-success" id="completeRide"><i class="fas fa-check-double"></i> إنهاء الرحلة</button>`;
+  const cancelBtn = (r.captainId===currentUser.uid && ['accepted','arrived','in_progress'].includes(r.status)) ? `<button class="btn btn-danger" id="cancelActive" style="margin-top:8px"><i class="fas fa-xmark"></i> إلغاء الرحلة</button>`:'';
+
+  $('#rideBody').innerHTML = `
+    <div class="status-bar"><span class="dot"></span> ${statusLabel(r.status)}</div>
+    <div class="total-card">
+      <h4><i class="fas fa-user"></i> العميل</h4>
+      <div class="total-row"><span>الاسم</span><strong>${esc(r.customerName||'-')}</strong></div>
+      <div class="total-row"><span>الهاتف</span><strong><a href="tel:${esc(r.customerPhone||'')}" style="color:var(--primary)">${esc(r.customerPhone||'-')}</a></strong></div>
+    </div>
+    <div class="total-card">
+      <div class="total-row"><span>مسافة الرحلة</span><strong>${(+r.routeKm||0).toFixed(2)} كم</strong></div>
+      <div class="total-row big"><span>السعر</span><strong style="color:var(--primary)">${(+r.price||0).toLocaleString()} ل.س</strong></div>
+    </div>
+    <div class="actions-grid">
+      <a href="${pickupNav}" target="_blank" class="btn btn-success"><i class="fas fa-route"></i> توجّه للعميل</a>
+      <a href="${destNav}" target="_blank" class="btn btn-success"><i class="fas fa-route"></i> توجّه للوجهة</a>
+    </div>
+    <div style="margin-top:10px">${actions}</div>
+    ${cancelBtn}
+  `;
+  if($('#acceptBtn')) $('#acceptBtn').onclick = ()=>acceptRide(r.id);
+  if($('#markArrived')) $('#markArrived').onclick = ()=>updateDoc(doc(db,'rides',r.id),{status:'arrived',arrivedAt:serverTimestamp()});
+  if($('#startRide')) $('#startRide').onclick = ()=>updateDoc(doc(db,'rides',r.id),{status:'in_progress',startedAt:serverTimestamp()});
+  if($('#completeRide')) $('#completeRide').onclick = async ()=>{ await updateDoc(doc(db,'rides',r.id),{status:'completed',completedAt:serverTimestamp()}); toast('اكتملت الرحلة','success'); showScreen('homeScreen'); };
+  if($('#cancelActive')) $('#cancelActive').onclick = async ()=>{ if(!confirm('تأكيد الإلغاء؟')) return; await updateDoc(doc(db,'rides',r.id),{status:'cancelled',cancelledAt:serverTimestamp()}); showScreen('homeScreen'); };
+}
+
+async function acceptRide(rideId){
+  if(!currentLoc) return toast('فعّل GPS أولاً','error');
+  try{
+    await runTransaction(db, async tx=>{
+      const ref = doc(db,'rides',rideId);
+      const snap = await tx.get(ref);
+      if(!snap.exists()) throw new Error('الطلب غير موجود');
+      const r = snap.data();
+      if(r.status!=='searching' || r.captainId) throw new Error('استلمها كابتن آخر');
+      tx.update(ref,{
+        status:'accepted', captainId:currentUser.uid,
+        captainName:userData.name||'', captainPhone:userData.phone||'',
+        captainCar:userData.car||'', captainPlate:userData.plate||'',
+        captainLocation:currentLoc, captainPickupKm:km(currentLoc,r.pickup),
+        acceptedAt:serverTimestamp()
+      });
+    });
+    toast('تم قبول الرحلة','success');
+  }catch(e){toast(e.message||'فشل القبول','error')}
+}
 </script>
 </body>
 </html>
