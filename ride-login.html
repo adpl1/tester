@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>تسجيل الدخول - طلب سيارة</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B1220;--surface:#111A2E;--surface-2:#172238;--line:#22304D;--text:#E7ECF7;--muted:#8B98B5;--primary:#FFD400;--success:#22C55E;--danger:#EF4444}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0B1220 0%,#1A2540 60%,#0F1A30 100%)}
+.wrap{width:100%;max-width:420px}
+.brand{text-align:center;margin-bottom:24px}
+.brand .logo{width:84px;height:84px;border-radius:24px;background:var(--primary);color:#0B1220;display:grid;place-items:center;font-size:36px;margin:0 auto 14px;box-shadow:0 14px 40px rgba(255,212,0,.35)}
+.brand h1{font-size:24px;font-weight:900}
+.brand p{font-size:13px;color:var(--muted);margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px}
+.tabs{display:flex;background:var(--surface-2);border-radius:12px;padding:4px;margin-bottom:18px}
+.tab{flex:1;text-align:center;padding:11px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;color:var(--muted)}
+.tab.active{background:var(--primary);color:#0B1220}
+.field{margin-bottom:14px}
+.label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block;font-weight:600}
+.input{width:100%;background:var(--surface-2);border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.input:focus{border-color:var(--primary)}
+.btn{width:100%;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--primary);color:#0B1220}
+.btn:disabled{opacity:.6}
+.err{background:rgba(239,68,68,.15);color:#FCA5A5;padding:10px;border-radius:10px;font-size:13px;margin-bottom:12px;display:none}
+.err.show{display:block}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120%);background:#0B1220;color:#fff;padding:12px 18px;border-radius:12px;border:1px solid var(--line);font-size:14px;z-index:9999;transition:.3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="logo"><i class="fas fa-taxi"></i></div>
+    <h1>طلب سيارة</h1>
+    <p>سجّل دخولك لتبدأ بطلب رحلتك</p>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" data-t="login">دخول</div>
+      <div class="tab" data-t="reg">حساب جديد</div>
+    </div>
+    <div class="err" id="err"></div>
+    <div id="loginBox">
+      <div class="field"><label class="label">البريد</label><input id="lEmail" class="input" type="email" placeholder="example@mail.com"></div>
+      <div class="field"><label class="label">كلمة المرور</label><input id="lPass" class="input" type="password" placeholder="••••••"></div>
+      <button class="btn btn-primary" id="loginBtn"><i class="fas fa-right-to-bracket"></i> تسجيل الدخول</button>
+    </div>
+    <div id="regBox" class="hidden">
+      <div class="field"><label class="label">الاسم</label><input id="rName" class="input" placeholder="اسمك"></div>
+      <div class="field"><label class="label">رقم الجوال</label><input id="rPhone" class="input" placeholder="09xxxxxxxx"></div>
+      <div class="field"><label class="label">البريد</label><input id="rEmail" class="input" type="email"></div>
+      <div class="field"><label class="label">كلمة المرور</label><input id="rPass" class="input" type="password" placeholder="6 أحرف على الأقل"></div>
+      <button class="btn btn-primary" id="regBtn"><i class="fas fa-user-plus"></i> إنشاء الحساب</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = { apiKey:"AIzaSyA3wjOh1IZLS5cK8dH0fB6nwKH50iXvFhk", authDomain:"ahmad-b755f.firebaseapp.com", projectId:"ahmad-b755f", storageBucket:"ahmad-b755f.firebasestorage.app", messagingSenderId:"1086597289816", appId:"1:1086597289816:web:efe60451f04837b75e772d" };
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+setPersistence(auth, browserLocalPersistence).catch(()=>{});
+
+const $ = s => document.querySelector(s);
+const toast = (m)=>{const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+const showErr = m=>{const e=$('#err');e.textContent=m;e.classList.add('show')};
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  $('#loginBox').classList.toggle('hidden', t.dataset.t!=='login');
+  $('#regBox').classList.toggle('hidden', t.dataset.t!=='reg');
+  $('#err').classList.remove('show');
+}));
+
+$('#loginBtn').onclick = async ()=>{
+  $('#loginBtn').disabled=true;
+  try{ await signInWithEmailAndPassword(auth, $('#lEmail').value.trim(), $('#lPass').value); }
+  catch(e){ showErr('بيانات غير صحيحة'); $('#loginBtn').disabled=false; }
+};
+$('#regBtn').onclick = async ()=>{
+  const name=$('#rName').value.trim(), phone=$('#rPhone').value.trim(), email=$('#rEmail').value.trim(), pass=$('#rPass').value;
+  if(!name||!phone||!email||pass.length<6) return showErr('املأ جميع الحقول');
+  $('#regBtn').disabled=true;
+  try{
+    const cred = await createUserWithEmailAndPassword(auth,email,pass);
+    // Don't overwrite existing user role; merge ride-customer fields
+    const existing = await getDoc(doc(db,'users',cred.user.uid));
+    if(!existing.exists()){
+      await setDoc(doc(db,'users',cred.user.uid),{ uid:cred.user.uid, name, phone, email, role:'user', createdAt:serverTimestamp() });
+    } else {
+      await setDoc(doc(db,'users',cred.user.uid),{ name, phone, email },{merge:true});
+    }
+  }catch(e){ showErr('فشل التسجيل: '+(e.code||'')); $('#regBtn').disabled=false; }
+};
+
+onAuthStateChanged(auth, u=>{ if(u){ window.location.replace('ride.html'); } });
+</script>
+</body>
+</html>
