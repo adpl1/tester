@@ -1,0 +1,193 @@
+/* ============================================
+   ADPL Features Layer - الطبقة المضافة للميزات
+   كل التصميمات الجديدة بدون لمس الكود الأصلي
+   ============================================ */
+
+/* === متغيرات مشتركة === */
+:root{
+  --adpl-primary:#FF5A1F;
+  --adpl-success:#22C55E;
+  --adpl-danger:#EF4444;
+  --adpl-warning:#F59E0B;
+  --adpl-dark:#1A1D29;
+  --adpl-gray:#6B7280;
+  --adpl-light:#F8F9FB;
+  --adpl-border:#E8EBF0;
+}
+
+/* === Toast / تنبيهات تختفي تلقائياً === */
+.adpl-toast-container{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:90vw;width:380px}
+.adpl-toast{background:white;border-radius:14px;padding:14px 18px;box-shadow:0 10px 40px rgba(0,0,0,.18);display:flex;align-items:center;gap:12px;font-family:'Cairo','Tajawal',sans-serif;font-size:14px;font-weight:600;color:#1A1D29;animation:adplToastIn .35s cubic-bezier(.2,.9,.3,1.2);pointer-events:auto;border-right:4px solid var(--adpl-primary)}
+.adpl-toast.success{border-right-color:var(--adpl-success)}
+.adpl-toast.danger{border-right-color:var(--adpl-danger)}
+.adpl-toast.warning{border-right-color:var(--adpl-warning)}
+.adpl-toast i{font-size:18px;flex-shrink:0}
+.adpl-toast.success i{color:var(--adpl-success)}
+.adpl-toast.danger i{color:var(--adpl-danger)}
+.adpl-toast.warning i{color:var(--adpl-warning)}
+.adpl-toast.info i{color:var(--adpl-primary)}
+.adpl-toast.fade-out{animation:adplToastOut .3s forwards}
+@keyframes adplToastIn{from{opacity:0;transform:translateY(-18px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes adplToastOut{to{opacity:0;transform:translateY(-12px) scale(.95)}}
+
+/* === Modal (تفاصيل المنتج، تقييم، تعديل الملف...) === */
+.adpl-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99990;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);font-family:'Cairo','Tajawal',sans-serif}
+.adpl-modal-backdrop.active{display:flex;animation:adplFadeIn .25s}
+.adpl-modal{background:white;width:100%;max-width:480px;max-height:92vh;border-radius:24px 24px 0 0;overflow-y:auto;animation:adplSlideUp .3s cubic-bezier(.2,.9,.3,1)}
+.adpl-modal.center{margin:auto;border-radius:24px;max-height:85vh}
+.adpl-modal-header{padding:18px 20px;border-bottom:1px solid var(--adpl-border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;z-index:5}
+.adpl-modal-header h3{font-size:17px;font-weight:800;color:var(--adpl-dark);margin:0}
+.adpl-modal-close{width:34px;height:34px;border-radius:50%;background:var(--adpl-light);border:none;cursor:pointer;font-size:16px;color:var(--adpl-gray);display:flex;align-items:center;justify-content:center}
+.adpl-modal-body{padding:20px}
+@keyframes adplFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes adplSlideUp{from{transform:translateY(100%)}to{transform:none}}
+
+/* === تفاصيل المنتج === */
+.adpl-product-img{width:100%;height:240px;object-fit:cover;border-radius:18px;margin-bottom:16px;background:linear-gradient(135deg,#FFE8DD,#FFF)}
+.adpl-product-title{font-size:22px;font-weight:900;color:var(--adpl-dark);margin-bottom:6px}
+.adpl-product-price{font-size:24px;font-weight:900;color:var(--adpl-primary);margin-bottom:14px}
+.adpl-product-desc{font-size:14px;line-height:1.7;color:var(--adpl-gray);margin-bottom:18px}
+.adpl-product-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.adpl-meta-pill{background:var(--adpl-light);padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;color:var(--adpl-dark)}
+.adpl-product-cta{display:flex;gap:10px}
+.adpl-btn{flex:1;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s}
+.adpl-btn:active{transform:scale(.97)}
+.adpl-btn-primary{background:var(--adpl-primary);color:white}
+.adpl-btn-ghost{background:var(--adpl-light);color:var(--adpl-dark)}
+.adpl-btn-success{background:var(--adpl-success);color:white}
+.adpl-btn-danger{background:var(--adpl-danger);color:white}
+
+/* === المفضلة === */
+.adpl-fav-btn{position:absolute;top:10px;left:10px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--adpl-gray);font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:5;transition:.2s}
+.adpl-fav-btn.active{color:var(--adpl-danger)}
+.adpl-fav-btn:active{transform:scale(.9)}
+.adpl-fav-empty{text-align:center;padding:60px 20px;color:var(--adpl-gray)}
+.adpl-fav-empty i{font-size:60px;color:var(--adpl-border);margin-bottom:14px}
+.adpl-fav-empty p{font-size:15px;font-weight:700}
+
+/* === المحادثة (Chat) === */
+.adpl-chat{position:fixed;inset:0;background:#F8F9FB;z-index:9990;display:none;flex-direction:column;font-family:'Cairo','Tajawal',sans-serif;max-width:480px;margin:0 auto}
+.adpl-chat.active{display:flex;animation:adplFadeIn .25s}
+.adpl-chat-header{background:white;padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--adpl-border);box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.adpl-chat-back{width:36px;height:36px;border-radius:50%;background:var(--adpl-light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--adpl-dark)}
+.adpl-chat-info{flex:1}
+.adpl-chat-info h4{font-size:15px;font-weight:800;color:var(--adpl-dark);margin:0}
+.adpl-chat-info p{font-size:12px;color:var(--adpl-gray);margin:0}
+.adpl-chat-status{width:10px;height:10px;border-radius:50%;background:var(--adpl-success)}
+.adpl-chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.adpl-msg{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-wrap:break-word;animation:adplMsgIn .2s}
+.adpl-msg.me{align-self:flex-end;background:var(--adpl-primary);color:white;border-bottom-right-radius:4px}
+.adpl-msg.them{align-self:flex-start;background:white;color:var(--adpl-dark);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.adpl-msg-time{font-size:10px;opacity:.7;margin-top:4px;display:block}
+@keyframes adplMsgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.adpl-chat-input{background:white;padding:10px 14px;display:flex;gap:8px;align-items:center;border-top:1px solid var(--adpl-border)}
+.adpl-chat-input input{flex:1;background:var(--adpl-light);border:none;border-radius:22px;padding:12px 16px;font-size:14px;font-family:inherit;outline:none}
+.adpl-chat-send{width:44px;height:44px;border-radius:50%;background:var(--adpl-primary);color:white;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.adpl-chat-empty{text-align:center;color:var(--adpl-gray);padding:40px;font-size:13px}
+
+/* زر فتح المحادثة في الطلب */
+.adpl-chat-fab{display:inline-flex;align-items:center;gap:8px;background:var(--adpl-primary);color:white;border:none;border-radius:14px;padding:10px 18px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;margin-top:8px}
+
+/* === النجوم / التقييم === */
+.adpl-stars{display:inline-flex;gap:2px;direction:ltr}
+.adpl-stars i{color:#E2E8F0;font-size:18px}
+.adpl-stars i.active{color:#FBBF24}
+.adpl-rate-input i{cursor:pointer;font-size:34px;transition:.15s}
+.adpl-rate-input i:hover{transform:scale(1.15)}
+
+/* === مركز الإشعارات === */
+.adpl-bell{position:fixed;top:14px;left:14px;z-index:9980;width:42px;height:42px;border-radius:50%;background:white;border:none;box-shadow:0 4px 14px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--adpl-dark);cursor:pointer}
+.adpl-bell-badge{position:absolute;top:-4px;right:-4px;background:var(--adpl-danger);color:white;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.adpl-notif-panel{position:fixed;top:64px;left:14px;width:340px;max-width:calc(100vw - 28px);max-height:70vh;background:white;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.18);z-index:9985;overflow:hidden;display:none;font-family:'Cairo','Tajawal',sans-serif}
+.adpl-notif-panel.active{display:block;animation:adplSlideDown .25s}
+@keyframes adplSlideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.adpl-notif-head{padding:14px 18px;border-bottom:1px solid var(--adpl-border);display:flex;justify-content:space-between;align-items:center}
+.adpl-notif-head h4{font-size:15px;font-weight:800;margin:0;color:var(--adpl-dark)}
+.adpl-notif-clear{background:none;border:none;color:var(--adpl-primary);font-size:12px;font-weight:700;cursor:pointer}
+.adpl-notif-list{max-height:55vh;overflow-y:auto;padding:8px}
+.adpl-notif-item{padding:12px 14px;border-radius:12px;margin-bottom:6px;background:var(--adpl-light);display:flex;gap:12px;align-items:flex-start}
+.adpl-notif-item.warning{background:#FEF3C7}
+.adpl-notif-item.danger{background:#FEE2E2}
+.adpl-notif-icon{width:34px;height:34px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.adpl-notif-content{flex:1}
+.adpl-notif-content h5{font-size:13px;font-weight:800;color:var(--adpl-dark);margin:0 0 3px}
+.adpl-notif-content p{font-size:12px;color:var(--adpl-gray);margin:0;line-height:1.5}
+.adpl-notif-time{font-size:10px;color:var(--adpl-gray);margin-top:4px;display:block}
+.adpl-notif-empty{text-align:center;padding:30px;color:var(--adpl-gray);font-size:13px}
+
+/* === Banner تحذير الطلب غير المكتمل === */
+.adpl-pending-banner{background:linear-gradient(90deg,#EF4444,#DC2626);color:white;padding:12px 16px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;font-family:'Cairo','Tajawal',sans-serif;position:sticky;top:0;z-index:30;cursor:pointer;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+.adpl-pending-banner i{font-size:18px;animation:adplPulse 1.5s infinite}
+@keyframes adplPulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* === صفحة الأرباح (مندوب/كابتن) === */
+.adpl-earnings{padding:18px;font-family:'Cairo','Tajawal',sans-serif}
+.adpl-earnings-card{background:linear-gradient(135deg,var(--adpl-primary),#FF8A4F);color:white;border-radius:20px;padding:24px;margin-bottom:16px;box-shadow:0 12px 30px rgba(255,90,31,.25)}
+.adpl-earnings-card h3{font-size:14px;font-weight:600;opacity:.9;margin:0 0 8px}
+.adpl-earnings-amount{font-size:34px;font-weight:900;margin:0}
+.adpl-earnings-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.adpl-earnings-stat{background:rgba(255,255,255,.18);padding:10px;border-radius:12px;text-align:center}
+.adpl-earnings-stat .v{font-size:18px;font-weight:900}
+.adpl-earnings-stat .l{font-size:11px;opacity:.9}
+.adpl-earnings-row{background:white;border:1px solid var(--adpl-border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.adpl-dues-card{background:white;border-radius:18px;padding:18px;margin-bottom:14px;border:2px solid var(--adpl-warning)}
+.adpl-dues-card.danger{border-color:var(--adpl-danger);background:#FEE2E2}
+.adpl-dues-card h4{font-size:14px;font-weight:700;color:var(--adpl-gray);margin:0 0 6px}
+.adpl-dues-amount{font-size:28px;font-weight:900;color:var(--adpl-warning);margin:0}
+.adpl-dues-card.danger .adpl-dues-amount{color:var(--adpl-danger)}
+.adpl-dues-warn{background:#FEE2E2;color:#991B1B;padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:10px;display:flex;gap:8px;align-items:center}
+.adpl-code-box{display:flex;gap:8px;margin-top:12px}
+.adpl-code-box input{flex:1;background:var(--adpl-light);border:1.5px solid var(--adpl-border);border-radius:10px;padding:10px 14px;font-family:inherit;outline:none;font-size:14px;direction:ltr;text-align:center;font-weight:700}
+.adpl-code-box button{background:var(--adpl-primary);color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:800;cursor:pointer;font-family:inherit}
+
+/* === ETA / تقدير الوصول === */
+.adpl-eta-pill{display:inline-flex;align-items:center;gap:6px;background:#DBEAFE;color:#1E40AF;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:800;font-family:'Cairo','Tajawal',sans-serif}
+.adpl-eta-pill i{font-size:12px}
+
+/* === تثبيت رأس صفحة طلب السيارة === */
+body.adpl-ride-page .header{position:sticky !important;top:0 !important;z-index:100 !important;background:linear-gradient(135deg,#15203B 0%,#0F1A30 100%) !important}
+body.adpl-ride-page #map{position:relative !important;z-index:1 !important}
+body.adpl-ride-page #mapWrap{position:relative !important;z-index:1 !important;overflow:hidden;border-radius:14px}
+/* إخفاء أي مربع أسود فارغ في شريط التبويب */
+body.adpl-ride-page .tabbar > *:empty,
+body.adpl-ride-page .bottom-nav > *:empty{display:none !important}
+
+/* === تبويب "حسابي" (الرئيسية) === */
+.adpl-tab-account{font-family:'Cairo',sans-serif}
+.adpl-account-screen{padding:20px;font-family:'Cairo',sans-serif}
+.adpl-account-card{background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.05);display:flex;gap:14px;align-items:center}
+.adpl-account-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--adpl-primary),#FF8A4F);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;overflow:hidden}
+.adpl-account-avatar img{width:100%;height:100%;object-fit:cover}
+.adpl-account-info h3{font-size:17px;font-weight:800;color:var(--adpl-dark);margin:0 0 4px}
+.adpl-account-info p{font-size:13px;color:var(--adpl-gray);margin:0}
+.adpl-account-menu{background:white;border-radius:18px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.adpl-account-item{padding:16px 18px;display:flex;gap:14px;align-items:center;border-bottom:1px solid var(--adpl-border);cursor:pointer;font-size:14px;font-weight:600;color:var(--adpl-dark)}
+.adpl-account-item:last-child{border-bottom:none}
+.adpl-account-item:active{background:var(--adpl-light)}
+.adpl-account-item i.lead{width:32px;height:32px;border-radius:8px;background:var(--adpl-light);color:var(--adpl-primary);display:flex;align-items:center;justify-content:center;font-size:14px}
+.adpl-account-item .arrow{margin-right:auto;color:var(--adpl-gray);font-size:12px}
+
+/* === Search dropdown === */
+.adpl-search-results{position:absolute;top:100%;left:0;right:0;background:white;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);max-height:60vh;overflow-y:auto;margin-top:6px;z-index:50;display:none}
+.adpl-search-results.active{display:block;animation:adplSlideDown .2s}
+.adpl-search-result{padding:12px 16px;display:flex;gap:12px;align-items:center;cursor:pointer;border-bottom:1px solid var(--adpl-border)}
+.adpl-search-result:hover{background:var(--adpl-light)}
+.adpl-search-result:last-child{border-bottom:none}
+.adpl-search-result i.lead{width:36px;height:36px;border-radius:10px;background:var(--adpl-light);color:var(--adpl-primary);display:flex;align-items:center;justify-content:center}
+.adpl-search-result .info h5{font-size:13px;font-weight:800;margin:0;color:var(--adpl-dark)}
+.adpl-search-result .info p{font-size:11px;color:var(--adpl-gray);margin:0}
+.adpl-search-result .dist{margin-right:auto;font-size:11px;color:var(--adpl-primary);font-weight:700}
+
+/* === Admin styles === */
+.adpl-admin-section{padding:20px;font-family:'Cairo',sans-serif}
+.adpl-admin-card{background:white;border-radius:14px;padding:18px;border:1px solid var(--adpl-border);margin-bottom:14px}
+.adpl-admin-table{width:100%;border-collapse:collapse;font-size:13px}
+.adpl-admin-table th,.adpl-admin-table td{padding:10px;text-align:right;border-bottom:1px solid var(--adpl-border)}
+.adpl-admin-table th{background:var(--adpl-light);font-weight:800;color:var(--adpl-dark)}
+.adpl-form-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:10px}
+.adpl-form-row input,.adpl-form-row select{background:var(--adpl-light);border:1px solid var(--adpl-border);border-radius:10px;padding:10px;font-family:inherit;font-size:13px;outline:none}
+
+/* مساحة آمنة لزر الإشعارات لا يغطي محتوى */
+@media (max-width:520px){
+  .adpl-bell{top:10px;left:10px}
+}

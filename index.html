@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ادبل | توصيل طلبات سريع </title>
+
+<meta name="description" content="ادبل منصة توصيل طلبات تتيح لك طلب أي شيء بسهولة من المطاعم والمتاجر القريبة، مع تتبع مباشر وتجربة استخدام سريعة وآمنة. اطلب الآن واستلم طلبك بسرعة.">
+
+<meta name="keywords" content="توصيل طلبات, ادبل, طلب أي شيء, توصيل سريع, تطبيق توصيل, السعودية">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://adpl1.github.io/adpl/">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta name="google-site-verification" content="DhT6dcetl6v_uKdz_S_asi6u918VSW4SRqR8GGCcKgw" />
+  <link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F5C842">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ادبل">
+<link rel="apple-touch-icon" href="favicon.png">
+
+<link rel="stylesheet" href="css/index.css">
+<link rel="stylesheet" href="css/adpl-features.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="app" id="app">
+
+
+<!-- HOME -->
+<div id="homeScreen" class="screen">
+  <div class="home-hero">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div><div class="greet">مرحباً بعودتك</div><div class="name" id="helloName">صديقنا</div></div>
+      <div class="avatar" id="homeAvatar" onclick="showScreen('profileScreen')">-</div>
+    </div>
+    <div class="search-bar"><i class="fas fa-search" style="color:var(--gray)"></i><input placeholder="ابحث عن متجر أو منتج..." id="searchInput"></div>
+  </div>
+
+  <!-- PWA Install Bar -->
+  <div class="pwa-install-bar" id="pwaInstallBar">
+    <div class="pwa-ic"><img src="favicon.png" alt="ادبل"></div>
+    <div class="pwa-text">
+      <h4>ثبّت تطبيق ادبل</h4>
+      <p>للوصول السريع من شاشتك الرئيسية</p>
+    </div>
+    <button class="pwa-btn-install" id="pwaInstallBtn">تثبيت</button>
+    <button class="pwa-close" id="pwaCloseBtn"><i class="fas fa-times"></i></button>
+  </div>
+
+  <div class="section">
+    <div class="custom-card" onclick="openCustomOrder()">
+      <div class="ic"><i class="fas fa-wand-magic-sparkles"></i></div>
+      <div style="flex:1">
+        <h4>اطلب أي شيء من أي مكان</h4>
+        <p>اكتب طلبك ونحن نحضره لك من أي متجر</p>
+      </div>
+      <i class="fas fa-chevron-left" style="font-size:14px"></i>
+    </div>
+  </div>
+
+  <!-- خدماتنا -->
+  <div class="section">
+    <a href="ride.html" style="text-decoration:none;display:block">
+      <div style="background:linear-gradient(135deg,#0F5132 0%,#198754 50%,#1B7A4D 100%);border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 8px 24px rgba(15,81,50,.28)">
+        <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:22px;color:#fff;flex-shrink:0"><i class="fas fa-taxi"></i></div>
+        <div style="flex:1">
+          <h4 style="font-size:15px;font-weight:800;color:#fff;margin-bottom:3px">طلب سيارة</h4>
+          <p style="font-size:12px;color:rgba(255,255,255,.85)">وصّلك لأي مكان بسهولة وأمان</p>
+        </div>
+        <i class="fas fa-chevron-left" style="font-size:14px;color:#fff"></i>
+      </div>
+    </a>
+  </div>
+
+  <div class="section" id="bannersSection" style="display:none">
+    <div class="section-head"><h3>عروض حصرية</h3></div>
+    <div class="banners" id="bannersList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h3>الأقسام</h3></div>
+    <div class="cats" id="catsList"><div class="cat-pill active" data-cat="all">الكل</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h3>المتاجر المميزة</h3></div>
+    <div class="stores-grid" id="storesList"></div>
+  </div>
+  <div class="section" id="homeProductsSection" style="display:none">
+    <div class="section-head"><h3>المنتجات</h3></div>
+    <div class="section-sub">جميع المنتجات مع تحميل تدريجي</div>
+    <div class="product-list" id="homeProductsList"></div>
+    <div class="load-more-wrap"><button class="btn btn-ghost" id="homeProductsMore" style="display:none">تحميل المزيد</button></div>
+  </div>
+
+</div>
+
+<!-- STORE DETAIL -->
+<div id="storeScreen" class="screen">
+  <div class="store-banner" id="storeBanner">
+    <div class="back" onclick="showScreen('homeScreen')"><i class="fas fa-chevron-right"></i></div>
+  </div>
+  <div class="store-info">
+    <h3 id="storeName">-</h3>
+    <p id="storeDesc">-</p>
+  </div>
+  <div class="section">
+    <div class="cats" id="storeCats"><div class="cat-pill active" data-cat="all">الكل</div></div>
+  </div>
+  <div class="section">
+    <div class="product-list" id="productsList"></div>
+  </div>
+</div>
+
+<!-- CART -->
+<div id="cartScreen" class="screen">
+  <div class="header">
+    <button class="icon-btn" onclick="showScreen('homeScreen')"><i class="fas fa-chevron-right"></i></button>
+    <h2>السلة</h2>
+  </div>
+  <div style="padding:16px">
+    <div id="cartList"></div>
+    <div id="cartEmpty" class="empty" style="display:none"><i class="fas fa-basket-shopping"></i><h4>السلة فارغة</h4><p>أضف منتجات للطلب</p></div>
+    <div id="cartSummary" style="display:none">
+      <div class="total-card">
+        <div class="total-row"><span>المجموع الفرعي</span><strong id="subTotal">0</strong></div>
+        <div class="total-row"><span>رسوم التوصيل</span><strong id="cartDeliveryFee">0 ل.س</strong></div>
+        <div class="total-row big"><span>الإجمالي</span><strong id="grandTotal" style="color:var(--primary)">0 ل.س</strong></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="showScreen('checkoutScreen')"><i class="fas fa-location-dot"></i> متابعة الطلب</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div id="checkoutScreen" class="screen">
+  <div class="header">
+    <button class="icon-btn" onclick="showScreen('cartScreen')"><i class="fas fa-chevron-right"></i></button>
+    <h2>تأكيد الطلب</h2>
+  </div>
+  <div style="padding:16px">
+    <div class="map-note"><i class="fas fa-info-circle"></i> اختر موقع التوصيل بالنقر على الخريطة</div>
+    <div id="map"></div>
+    <div class="field">
+      <label>تفاصيل العنوان (اختياري)</label>
+      <textarea id="addressNote" class="textarea" placeholder="مثال: مبنى 12، الطابق 3..."></textarea>
+    </div>
+    <div class="field">
+      <label>ملاحظات للمندوب (اختياري)</label>
+      <textarea id="deliveryNote" class="textarea" placeholder="أي ملاحظات خاصة..."></textarea>
+    </div>
+    <div class="total-card">
+      <div class="total-row"><span>عدد الأصناف</span><strong id="checkItems">0</strong></div>
+      <div class="total-row"><span>رسوم التوصيل</span><strong id="checkDeliveryFee">0 ل.س</strong></div>
+      <div class="total-row big"><span>الإجمالي</span><strong id="checkTotal" style="color:var(--primary)">0 ل.س</strong></div>
+    </div>
+    <div id="deliveryEstimateBox" class="map-note" style="margin-top:12px"><i class="fas fa-truck"></i><span id="deliveryEstimateText">سيتم احتساب رسوم التوصيل بعد تحديد الموقع</span></div>
+    <button class="btn btn-primary" style="margin-top:14px" id="placeOrderBtn"><i class="fas fa-check"></i> تأكيد الطلب</button>
+  </div>
+</div>
+
+<!-- CUSTOM ORDER -->
+<div id="customScreen" class="screen">
+  <div class="header">
+    <button class="icon-btn" onclick="showScreen('homeScreen')"><i class="fas fa-chevron-right"></i></button>
+    <h2>اطلب أي شيء</h2>
+  </div>
+  <div style="padding:16px">
+    <div class="map-note"><i class="fas fa-wand-magic-sparkles"></i> اكتب ما تحتاج ومن أي متجر وسنوصله إليك</div>
+    <div class="field">
+      <label>اسم المتجر (إن وجد)</label>
+      <div class="input-wrap"><i class="fas fa-store"></i><input id="customStore" class="input" placeholder="مثال: صيدلية الشفاء"></div>
+    </div>
+    <div class="field">
+      <label>تفاصيل الطلب</label>
+      <textarea id="customRequest" class="textarea" placeholder="اذكر الأصناف والكميات بالتفصيل..." style="min-height:120px"></textarea>
+    </div>
+    <div class="map-note"><i class="fas fa-location-dot"></i> حدد موقع التوصيل على الخريطة</div>
+    <div id="customMap" style="height:240px;border-radius:16px;margin-bottom:12px"></div>
+    <div class="map-note" style="margin-bottom:12px"><i class="fas fa-truck"></i><span id="customDeliveryFeeBox">سيتم احتساب رسوم التوصيل بعد تحديد الموقع</span></div>
+    <div class="field">
+      <label>عنوان إضافي (اختياري)</label>
+      <textarea id="customAddress" class="textarea" placeholder="تفاصيل العنوان..."></textarea>
+    </div>
+    <button class="btn btn-primary" id="submitCustomBtn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div id="ordersScreen" class="screen">
+  <div class="header"><h2>طلباتي</h2></div>
+  <div style="padding:16px">
+    <div id="ordersList"></div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL -->
+<div id="orderDetailScreen" class="screen">
+  <div class="header">
+    <button class="icon-btn" onclick="showScreen('ordersScreen')"><i class="fas fa-chevron-right"></i></button>
+    <h2>تفاصيل الطلب</h2>
+    <button class="icon-btn" id="chatFromOrder" style="position:relative"><i class="fas fa-comments"></i><span class="chat-notif-dot" id="chatNotifDot"></span></button>
+  </div>
+  <div style="padding:16px" id="orderDetailBody"></div>
+</div>
+
+<!-- CHAT -->
+<div id="chatScreen" class="screen">
+  <div class="header">
+    <button class="icon-btn" onclick="showScreen('orderDetailScreen')"><i class="fas fa-chevron-right"></i></button>
+    <div class="chat-user">
+      <div class="chat-avatar" id="chatAvatar">-</div>
+      <div class="header-info">
+        <div class="title" id="chatTitle">الدردشة مع المندوب</div>
+        <div class="chat-subtitle" id="chatMeta">بانتظار معلومات المندوب</div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-container">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <input id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div id="profileScreen" class="screen">
+  <div class="profile-head">
+    <div class="avatar-big" id="profAvatar">-</div>
+    <h3 id="profName">-</h3>
+    <p id="profEmail">-</p>
+  </div>
+  <div style="padding:0 16px">
+    <div class="menu-item" onclick="showScreen('ordersScreen')">
+      <div class="ic"><i class="fas fa-receipt"></i></div>
+      <span>طلباتي</span><i class="fas fa-chevron-left chev"></i>
+    </div>
+    <div class="menu-item" onclick="toast('ميزة قريباً')">
+      <div class="ic"><i class="fas fa-heart"></i></div>
+      <span>المفضلة</span><i class="fas fa-chevron-left chev"></i>
+    </div>
+    <div class="menu-item" onclick="toast('ميزة قريباً')">
+      <div class="ic"><i class="fas fa-headset"></i></div>
+      <span>الدعم الفني</span><i class="fas fa-chevron-left chev"></i>
+    </div>
+    <div style="margin:16px 0 8px;font-size:13px;color:var(--gray);font-weight:700;padding-right:4px">فتح حساب جديد</div>
+    <a href="delivery.html" style="text-decoration:none">
+      <div class="menu-item" style="background:linear-gradient(135deg,rgba(34,197,94,.1) 0%,rgba(34,197,94,.05) 100%);border:1px solid rgba(34,197,94,.2);border-radius:14px;margin-bottom:10px">
+        <div class="ic" style="background:#DCFCE7;color:#16A34A"><i class="fas fa-motorcycle"></i></div>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:14px">مندوب توصيل طلبات</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">انضم كمندوب توصيل</div>
+        </div>
+        <i class="fas fa-chevron-left chev"></i>
+      </div>
+    </a>
+    <a href="captain.html" style="text-decoration:none">
+      <div class="menu-item" style="background:linear-gradient(135deg,rgba(255,212,0,.1) 0%,rgba(255,212,0,.05) 100%);border:1px solid rgba(255,212,0,.2);border-radius:14px;margin-bottom:10px">
+        <div class="ic" style="background:#FEF9C3;color:#CA8A04"><i class="fas fa-taxi"></i></div>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:14px">كابتن توصيل مشاوير</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">انضم كسائق كابتن</div>
+        </div>
+        <i class="fas fa-chevron-left chev"></i>
+      </div>
+    </a>
+    <div class="menu-item" onclick="logout()" style="color:var(--danger)">
+      <div class="ic" style="background:#FEE2E2;color:var(--danger)"><i class="fas fa-right-from-bracket"></i></div>
+      <span>تسجيل الخروج</span><i class="fas fa-chevron-left chev"></i>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav" id="bottomNav" style="display:none">
+  <div class="nav-item active" data-nav="homeScreen"><i class="fas fa-house"></i><span>الرئيسية</span></div>
+  <div class="nav-item" data-nav="ordersScreen"><i class="fas fa-receipt"></i><span>طلباتي</span><span class="nav-badge" id="ordersBadge"></span></div>
+  <div class="nav-item" data-nav="cartScreen"><i class="fas fa-basket-shopping"></i><span>السلة</span><span class="nav-badge" id="cartBadge"></span></div>
+  <div class="nav-item" data-nav="profileScreen"><i class="far fa-user"></i><span>حسابي</span></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="js/index.js" type="module"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.ADPL_PAGE="index";</script>
+<script src="js/adpl-features.js" defer></script>
+</body>
+</html>

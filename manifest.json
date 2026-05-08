@@ -1,0 +1,26 @@
+{
+  "name": "ادبل - توصيل طلبات سريع",
+  "short_name": "ادبل",
+  "description": "منصة توصيل طلبات تتيح لك طلب أي شيء بسهولة",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F5C842",
+  "theme_color": "#F5C842",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>طلب سيارة - أدبل</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ride.css">
+<link rel="stylesheet" href="css/adpl-features.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo"><i class="fas fa-taxi"></i></div>
+    <div><h2>طلب سيارة</h2><p>وصّلك لأي مكان بسرعة وأمان</p></div>
+  </div>
+
+  <!-- HOME / BOOK -->
+  <div id="homePage" class="page active">
+    <div class="section">
+      <div class="card">
+        <div class="legend">
+          <span><i class="dot-c dot-pickup"></i> موقعك</span>
+          <span><i class="dot-c dot-dest"></i> الوجهة</span>
+          <span style="color:var(--accent);margin-right:auto" id="mapHint"><i class="fas fa-info-circle"></i> جاري تحديد موقعك...</span>
+        </div>
+        <div id="mapWrap" style="position:relative">
+          <div id="map"></div>
+          <div class="center-pin" id="centerPin"><div class="pin"></div></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px" id="mapButtons">
+          <button class="btn btn-ghost hidden" id="useGpsBtn" style="flex:1"><i class="fas fa-location-crosshairs"></i> موقعي</button>
+          <button class="btn btn-ghost hidden" id="destBtn" style="flex:1;background:var(--primary);color:#0B1220;border:none;font-weight:900"><i class="fas fa-map-marker-alt"></i> تحديد الوجهة</button>
+          <button class="btn btn-ghost" id="resetMapBtn" style="flex:1"><i class="fas fa-rotate-right"></i> تعيين</button>
+        </div>
+
+        <!-- Destination Search Panel -->
+        <div id="destPanel" class="hidden" style="margin-top:14px">
+          <div class="search-bar">
+            <div class="search-input-wrap">
+              <i class="fas fa-search"></i>
+              <input id="destSearchInput" placeholder="ابحث عن وجهتك (اسم محل، منطقة...)">
+            </div>
+            <div class="icon-square" id="manualPinBtn" title="تحديد الموقع يدوياً"><i class="fas fa-map-pin"></i></div>
+          </div>
+          <div class="manual-label" id="manualPinLabel">
+            <i class="fas fa-map-pin"></i> اضغط الدبوس الأحمر لتحديد الموقع يدوياً
+          </div>
+          <div class="results" id="searchResults"></div>
+          <div class="manual-hint hidden" id="manualPinHint"><i class="fas fa-info-circle"></i> حرّك الخريطة حتى يصبح الدبوس الأحمر فوق الموقع المطلوب، ثم اضغط <strong>تأكيد الموقع</strong></div>
+          <button class="btn btn-primary hidden" id="confirmManualPin" style="margin-top:10px"><i class="fas fa-check"></i> تأكيد الموقع</button>
+        </div>
+      </div>
+
+      <div class="card" id="estCard">
+        <h3 class="section-title"><i class="fas fa-receipt"></i> تفاصيل الرحلة</h3>
+        <div class="row"><span>المسافة المتوقعة</span><strong id="distVal">—</strong></div>
+        <div class="row"><span>أقرب كابتن</span><strong id="captainDistVal">—</strong></div>
+        <div class="row"><span>السعر التقديري</span><strong class="v" id="priceVal">—</strong></div>
+        <p style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6"><i class="fas fa-info-circle"></i> الحساب: 5000 رسم افتتاحي + 1500/كم للرحلة + 1000/كم لوصول الكابتن</p>
+      </div>
+
+      <button class="btn btn-primary" id="confirmBtn" disabled><i class="fas fa-check"></i> تأكيد الطلب</button>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="ordersPage" class="page">
+    <div class="section">
+      <h3 class="section-title"><i class="fas fa-clock-rotate-left"></i> طلباتي</h3>
+      <div id="ordersList"></div>
+    </div>
+  </div>
+
+  <!-- TRACKING (overlay-like) -->
+  <div id="trackPage" class="page">
+    <div class="section">
+      <div class="card" id="searchingCard">
+        <div class="searching">
+          <div class="pulse"><i class="fas fa-magnifying-glass"></i></div>
+          <h3 style="font-size:18px;font-weight:900">جارِ البحث عن كابتن...</h3>
+          <p style="margin-top:8px;color:var(--muted);font-size:13px">سيتم إرسال طلبك لأقرب كابتن متصل</p>
+        </div>
+        <button class="btn btn-danger" id="cancelSearchBtn"><i class="fas fa-xmark"></i> إلغاء</button>
+      </div>
+
+      <div id="acceptedBox" class="hidden">
+        <div class="status-bar"><span class="dot"></span><span id="statusText">قَبِل الكابتن طلبك</span></div>
+        <div class="card">
+          <div class="captain-card">
+            <div class="captain-avatar" id="capAvatar">ك</div>
+            <div style="flex:1"><strong id="capName">-</strong><div style="color:var(--muted);font-size:12px;margin-top:2px" id="capPhone">-</div></div>
+            <a id="capCallBtn" href="#" class="btn btn-ghost" style="width:auto;padding:11px 14px"><i class="fas fa-phone"></i></a>
+          </div>
+          <div class="row"><span>المسافة</span><strong id="trkDist">—</strong></div>
+          <div class="row"><span>السعر</span><strong class="v" id="trkPrice">—</strong></div>
+        </div>
+        <button class="btn btn-danger" id="cancelRideBtn"><i class="fas fa-xmark"></i> إلغاء الرحلة</button>
+      </div>
+
+      <div id="completedBox" class="hidden">
+        <div class="card completed-card">
+          <div class="check-big"><i class="fas fa-check"></i></div>
+          <h3 style="font-size:20px;font-weight:900">اكتملت الرحلة</h3>
+          <p style="margin-top:8px;color:var(--muted)">شكراً لاستخدامك خدمتنا</p>
+        </div>
+        <button class="btn btn-primary" id="newRideBtn"><i class="fas fa-plus"></i> طلب رحلة جديدة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" data-nav="homePage"><i class="fas fa-house"></i><span>الرئيسية</span></div>
+  <div class="nav-item" data-nav="ordersPage"><i class="fas fa-receipt"></i><span>طلباتي</span></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/ride.js" type="module"></script>
+<script>window.ADPL_PAGE="ride";</script>
+<script src="js/adpl-features.js" defer></script>
+</body>
+</html>
